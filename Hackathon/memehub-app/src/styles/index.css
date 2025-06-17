@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+@keyframes laugh-bar {
+  0% { width: 0; }
+  100% { width: 78%; }
+}
+.animate-laugh-bar {
+  animation: laugh-bar 2s ease-out forwards;
+}
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+@keyframes bounce-in {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-bounce-in {
+  animation: bounce-in 1s ease-in-out infinite;
+}
+
+@keyframes explode {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.explode-meme {
+  animation: explode 0.8s ease-out;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+  white-space: nowrap;
+}
+
+.glow-text {
+  text-shadow: 0 0 5px #fff, 0 0 10px #f0f, 0 0 15px #f0f, 0 0 20px #f0f;
+}
+
+.confetti:hover {
+  animation: confettiBurst 0.6s ease forwards;
+}
+@keyframes confettiBurst {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3) rotate(10deg); }
+  100% { transform: scale(1) rotate(-10deg); }
+}
+@keyframes crinkle {
+  0%, 100% { transform: skewX(0deg); }
+  25% { transform: skewX(-3deg); }
+  50% { transform: skewX(3deg); }
+  75% { transform: skewX(-3deg); }
+}
+
+@keyframes pulseBold {
+  0%, 100% { font-weight: 900; text-shadow: 0 0 8px #FFD700; transform: scale(1); }
+  50% { font-weight: 800; text-shadow: 0 0 4px #FFA500; transform: scale(1.05); }
+}
+
+/* To apply with Tailwind, add to your global CSS or inside a <style> tag */
+.crinkle {
+  animation: crinkle 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+.pulse-bold {
+  animation: pulseBold 2s ease-in-out infinite;
+  display: inline-block;
+  font-weight: 900;
+  text-shadow: 0 0 8px #FFD700;
+}
+
+@keyframes crinkle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-2deg) scale(1.05); }
+  50% { transform: rotate(2deg) scale(1.1); }
+  75% { transform: rotate(-1deg) scale(1.05); }
+}
+
+.crinkle {
+  display: inline-block;
+  animation: crinkle 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-bold {
+  0%, 100% { font-weight: 900; text-shadow: 0 0 5px #ff0; }
+  50% { font-weight: 800; text-shadow: 0 0 15px #fffa00; }
+}
+
+.pulse-bold {
+  animation: pulse-bold 2s ease-in-out infinite;
+}
+::selection {
+  background: white;
+  color: black;
+}
+@keyframes swing {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(15deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-swing {
+  animation: swing 2s ease-in-out infinite;
+  transform-origin: top center;
+}
