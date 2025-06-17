@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login / Signup</title>
+  <link rel="icon" href="community.png" type="image/png">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background-color: #3b82f6;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .switch {
+      text-align: center;
+      margin-top: 15px;
+      color: #555;
+      cursor: pointer;
+    }
+    #homepage {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #2563eb;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  z-index: 999;
+}
+#popup {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2563eb;
+  color: white;
+  padding: 15px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-weight: bold;
+  animation: fadeInOut 3s ease-in-out forwards;
+  z-index: 9999;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+}
+
+  </style>
+</head>
+<body>
+
+  <a id="homepage" href="index.html">Home</a>
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="handleAuth()" id="auth-btn">Login</button>
+    <div class="switch" onclick="toggleForm()">Don't have an account? Sign Up</div>
+  </div>
+<!-- Custom Popup -->
+<div id="popup" style="display:none;"></div>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc ,serverTimestamp} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDEztkdU55CvlZXSXicamv2z8-SNR4GAjU",
+      authDomain: "auth-ba4ec.firebaseapp.com",
+      projectId: "auth-ba4ec",
+      storageBucket: "auth-ba4ec.appspot.com",
+      messagingSenderId: "525523413326",
+      appId: "1:525523413326:web:159b3dbcd0a267bb8bd61f",
+      measurementId: "G-Z71RL0S29Q"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+    const db = getFirestore(app);
+
+    let isLogin = true;
+
+    window.toggleForm = function() {
+      isLogin = !isLogin;
+      document.getElementById('form-title').innerText = isLogin ? 'Login' : 'Sign Up';
+      document.getElementById('auth-btn').innerText = isLogin ? 'Login' : 'Sign Up';
+      document.querySelector('.switch').innerText = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login";
+    }
+window.handleAuth = async function() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    if (isLogin) {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      showPopup("Login successful!");
+
+      localStorage.setItem("user", email);
+      const redirectURL = localStorage.getItem("redirectAfterLogin") || "user.html";
+      localStorage.removeItem("redirectAfterLogin");
+      setTimeout(() => window.location.href = redirectURL, 1500);
+
+    } else {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        createdAt: serverTimestamp()
+      });
+
+      showPopup("Signup successful!");
+      localStorage.setItem("user", email);
+      const redirectURL = localStorage.getItem("redirectAfterLogin") || "user.html";
+      localStorage.removeItem("redirectAfterLogin");
+      setTimeout(() => window.location.href = redirectURL, 1500);
+    }
+  } catch (error) {
+    showPopup(error.message, true);
+  }
+}
+
+function showPopup(message, isError = false) {
+  const popup = document.getElementById("popup");
+  popup.innerText = message;
+  popup.style.backgroundColor = isError ? "#dc2626" : "#2563eb";
+  popup.style.display = "block";
+  popup.style.animation = "fadeInOut 3s ease-in-out forwards";
+  setTimeout(() => {
+    popup.style.display = "none";
+  }, 3000);
+}
+
+</script>
+</body>
+</html>

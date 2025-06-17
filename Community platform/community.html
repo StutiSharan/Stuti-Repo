@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Community Discovery</title>
+    <link rel="icon" href="community.png" type="image/png">
+    <script src="https://kit.fontawesome.com/bb05f0a1b4.js" crossorigin="anonymous"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+      }
+
+      body {
+        background-color: #f9fafb;
+        color: #333;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        color: #111827;
+      }
+
+      .community-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  max-width: 800px;
+  margin: auto;
+  gap: 20px;
+}
+
+
+      .community-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        padding: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        margin-bottom: 50px;
+      }
+
+      .community-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .community-card img {
+  width: 100%;
+  height: 180px; /* Set a fixed height */
+  object-fit: cover; /* Makes the image fill while keeping aspect ratio */
+  border-radius: 8px;
+  margin-bottom: 15px;
+
+}
+
+
+      .community-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: #1f2937;
+      }
+
+      .community-card p {
+        font-size: 0.95rem;
+        color: #4b5563;
+      }
+
+      .join-btn , .add-comm{
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 20px;
+        background-color: #2563eb;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+        border: none;
+      }
+      .but{
+      display: flex;
+      justify-content: right;  
+      align-items: center;
+    }
+    .add-comm:hover {
+        background-color: #113187;
+      }
+      .join-btn:hover {
+        background-color: #1d4ed8;
+      }
+
+      
+    .search-container {
+  margin: 40px;
+  text-align: center;
+}
+
+.search-box {
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.search-box input {
+  padding: 12px 16px;
+  width: 250px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.search-box button {
+  padding: 12px 20px;
+  border: none;
+  background-color: #3b82f6;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-box button:hover {
+  background-color: #2563eb;
+}
+
+
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.footer-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 16px;
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.footer-icon i {
+  font-size: 22px;
+  margin-bottom: 2px;
+}
+
+.footer-icon span {
+  font-size: 11px;
+}
+
+.footer-icon:hover {
+  color: #2563eb;
+}
+
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Discover Communities</h1>
+    </div>
+
+    <div class="search-container">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search communities..." />
+          <button onclick="filterCards()">Search</button>
+        </div>
+        
+      </div>
+    <div class="community-grid">
+        <div class="community-card">
+            <img src="https://assets.skool.com/f/09cafb5298a844bb91a720b1367ed927/8d5e5277ca494e87bee102473a96b4fdae64132cf1fd4751a284cb44a37aa954-md.jpg" alt="Entrepreneurship" />
+            <h3>Learn AI tech</h3>
+            <p>Your Community to Master the Fundamentals of Working with Data and AI .</p>
+            <button class="join-btn" onclick="joinComm(this)">Join</button>
+          </div>
+
+          <div class="community-card">
+            <img src="https://assets.skool.com/f/d6870ad66ef7451ea55aa3ba7ba45058/845a33e1d8bd4818999bf042b54fb20a70b7d8076b8849318eb8f075b5f27524-md.jpg" alt="Entrepreneurship" />
+            <h3>Software Developer tech</h3>
+            <p>Where developers come to learn, connect, and grow together.</p>
+            <button class="join-btn" onclick="joinComm(this)">Join</button>         </div>
+
+      <div class="community-card">
+        <img src="https://assets.skool.com/f/95d2b0395676418d9ed900f04277a390/ef4f30798681404e8cf22609d62c1a65ec9884e1f7f74ab0bdaf427b9d3ed277-md.jpg" alt="Tech Community" />
+        <h3>Tech Innovators</h3>
+        <p>Explore the latest in AI, software development, and emerging tech trends.</p>
+        <button class="join-btn" onclick="joinComm(this)">Join</button>   </div>
+       
+      
+      <div class="community-card">
+        <img src="https://assets.skool.com/f/5d141e577bc04e92b9dcdcd152335836/92efe331f7244b7989fe88f09896c69c624c2c1fde53400b964053d72f3c3491-md.jpg" alt="Fitness" />
+        <h3>Fitness Freaks</h3>
+        <p>Join workout challenges, nutrition discussions, and stay motivated.</p>
+        <button class="join-btn" onclick="joinComm(this)">Join</button>     </div>
+
+      <div class="community-card">
+        <img src="https://assets.skool.com/f/e64f45d30b2f4440bc397557d7b99f66/d02259bdc00d4b44823563e25b7d8d83f5999afd04144f02867721c4ac43948d-md.jpg" alt="Books" />
+        <h3>Bookworms</h3>
+        <p>Discover book clubs, reviews, and author interactions in one place.</p>
+        <button class="join-btn" onclick="joinComm(this)">Join</button>   </div>
+
+      <div class="community-card">
+        <img src="https://assets.skool.com/f/b82ea41111174deab0506cb611b9736b/ee39a2f361c14e33b8a2063f3b5323931ce48a9221774480b42f2aad9572dcfa-md.jpg" alt="Entrepreneurship" />
+        <h3>Startup Hustlers</h3>
+        <p>For founders and makers building the next big thing. Share and grow together.</p>
+        <button class="join-btn" onclick="joinComm(this)">Join</button>   </div>
+
+      <div class="community-card">
+        <img src="https://assets.skool.com/f/5512a2e71b1649149136ea51bef78b0c/bc1fe44b176e4791ae84decd443f147bfcfe3cdb30d04e5e8eff11a2201edc4d-md.jpg" alt="Entrepreneurship" />
+        <h3>Chess gang</h3>
+        <p>Join the #1 FREE COMMUNITY for casual chess players to hang out & improve at chess the FUN way.</p>
+        <button class="join-btn" onclick="joinComm(this)">Join</button>   </div>
+
+      <div class="community-card">
+        <img src="https://assets.skool.com/f/288fb6f17690459bb195c1bcda64f8b3/891889c4068b44fa85aa876b22ae63248864d58920134588ac5ac88523fe2849-md.jpg" alt="Entrepreneurship" />
+        <h3>Entertainment</h3>
+        <p>We fast-track actors and models to succeed in the entertainment industry with expert coaching, industry insights, and key connections for future roles.</p>
+        <button class="join-btn" onclick="joinComm(this)">Join</button>     </div>
+
+        <div class="community-card">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUbgnW4lYcNt0tu4tCe19bP0iPZKwwO-5dzQ&s" alt="Gaming" />
+          <h3>Gaming Legends</h3>
+          <p>Connect with gamers worldwide, share tips, join tournaments, and level up together!</p>
+          <button class="join-btn" onclick="joinComm(this)">Join</button>
+        </div>
+        
+        <div class="community-card">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlHPP0pLJMpwIWRnvgxLX1zWqcEQO4az32IA&s" alt="Design" />
+          <h3>Creative Designers</h3>
+          <p>Unleash your creativity with fellow UI/UX, graphic, and product designers.</p>
+          <button class="join-btn" onclick="joinComm(this)">Join</button>
+        </div>
+        
+        <div class="community-card">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJOcbAPMbpatsIJnfHFu9rzR-ayQ2xXl0QmA&s" alt="Travel" />
+          <h3>Global Travelers</h3>
+          <p>Explore cultures, plan trips, share experiences, and find your next travel buddy!</p>
+          <button class="join-btn" onclick="joinComm(this)">Join</button>
+        </div>
+        
+        <div class="community-card">
+          <img src="https://static.vecteezy.com/system/resources/thumbnails/002/196/367/small_2x/illustration-design-of-master-chef-logo-menu-design-for-cafe-and-restaurant-free-eps-10-free-vector.jpg" alt="Cooking" />
+          <h3>Master Chefs</h3>
+          <p>Share recipes, kitchen hacks, and host cook-alongs with food lovers everywhere!</p>
+          <button class="join-btn" onclick="joinComm(this)">Join</button>
+        </div>
+        
+        <div class="community-card">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbNVJFcYajvRSzM7f1EnYlnFoW4D8g1KaN8A&s" alt="Finance" />
+          <h3>Finance Ninjas</h3>
+          <p>Talk investing, budgeting, crypto, and smart money moves with finance lovers!</p>
+          <button class="join-btn" onclick="joinComm(this)">Join</button>
+        </div>
+        
+        <div class="community-card">
+          <img src="https://www.adityabirlaintegratedschool.com/img/Mind-Matters-our-program-Main-Page.png" alt="Mental Health" />
+          <h3>Mind Matters</h3>
+          <p>Join open-minded folks for real talk on mindfulness, mental health & healing.</p>
+          <button class="join-btn" onclick="joinComm(this)">Join</button>
+        </div>
+        
+    </div>
+    <footer class="fixed-footer">
+        <a href="index.html" class="footer-icon">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+        <a href="feed.html" class="footer-icon">
+          <i class="fas fa-plus-circle"></i>
+          <span>Post</span>
+        </a>
+        <a href="login signup.html" class="footer-icon">
+          <i class="fas fa-user"></i>
+          <span>Account</span>
+        </a>
+      </footer>
+  </body>
+</html>
+<script>
+    function filterCards() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const cards = document.querySelectorAll(".community-card");
+      cards.forEach(card => {
+    const title = card.querySelector("h3").innerText.toLowerCase();
+    const desc = card.querySelector("p").innerText.toLowerCase();
+
+    if (title.includes(input) || desc.includes(input)) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+     });
+    }
+    function joinComm(btn) {
+  const isLoggedIn = localStorage.getItem("user");
+  if (!isLoggedIn) {
+    localStorage.setItem("redirectAfterLogin", "community.html");
+    alert("Please log in or sign up to join a community.");
+    
+    setTimeout(() => {
+      window.location.href = "login signup.html";
+    }, 100)
+
+    return;
+  }
+
+  btn.innerText = "Joined";
+  btn.style.backgroundColor = "#10b981";
+
+  const card = btn.closest(".community-card");
+  const title = card.querySelector("h3").innerText;
+  const desc = card.querySelector("p").innerText;
+  const imgSrc = card.querySelector("img").src;
+
+  const joinedCommunities = JSON.parse(localStorage.getItem("joinedCommunities") || "[]");
+
+  if (!joinedCommunities.find(comm => comm.title === title)) {
+    joinedCommunities.push({ title, desc, imgSrc });
+    localStorage.setItem("joinedCommunities", JSON.stringify(joinedCommunities));
+  }
+}
+
+  </script>

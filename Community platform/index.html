@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Niche Community Platform</title>
+  <link rel="icon" href="community.png" type="image/png">
+  <script src="https://kit.fontawesome.com/bb05f0a1b4.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --light: #e0f2fe;
+      --dark: #1e3a8a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f0f4f8;
+      color: #333;
+      scroll-behavior: smooth;
+    }
+
+    header {
+      background-color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .log img {
+      height: 70px;
+      width: 80px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #444;
+      font-weight: 500;
+      transition: 0.3s ease;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .login-head {
+      background: var(--primary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .login-head:hover {
+      background: var(--dark);
+    }
+
+    .hero {
+      height: 90vh;
+      background: linear-gradient(120deg, #3b82f6, #60a5fa, #93c5fd);
+      background-size: 400% 400%;
+      animation: gradientMove 10s ease infinite;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 20px;
+    }
+
+    @keyframes gradientMove {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .hero h1 {
+      font-size: 50px;
+      margin-bottom: 20px;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    .hero p {
+      font-size: 20px;
+      margin-bottom: 30px;
+      animation: fadeInUp 1.3s ease-out;
+    }
+
+    .btn-primary {
+      background-color: white;
+      color: var(--primary);
+      border: none;
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+      animation: fadeInUp 1.6s ease-out;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--dark);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-title {
+      font-size: 32px;
+      text-align: center;
+      margin: 50px 0 30px;
+      color: var(--dark);
+    }
+
+    .communities {
+      padding: 0 40px 60px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .card {
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s ease;
+      animation: popUp 0.5s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+    }
+
+    @keyframes popUp {
+      from {opacity: 0; transform: scale(0.95);}
+      to {opacity: 1; transform: scale(1);}
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: #555;
+      font-size: 14px;
+    }
+
+    .slider-wrapper {
+      position: relative;
+      max-width: 90%;
+      margin: auto;
+      margin-bottom: 40px;
+    }
+
+    .slider-container {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .slider-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .slider-container::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .post-card.big-card {
+      min-width: 300px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      scroll-snap-align: start;
+      position: relative;
+    }
+
+    .post-card.big-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .post-card.big-card .content {
+      padding: 15px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .scroll-button {
+      position: absolute;
+      top: 45%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 10;
+      transform: translateY(-50%);
+      font-size: 16px;
+    }
+
+    .scroll-button:hover {
+      background-color: var(--dark);
+    }
+
+    .scroll-button.left {
+      left: -10px;
+    }
+
+    .scroll-button.right {
+      right: -10px;
+    }
+
+    .info-section {
+      background: #fefce8;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .info-section h3 {
+      font-size: 26px;
+      margin-bottom: 15px;
+    }
+
+    .info-section p {
+      font-size: 16px;
+      color: #444;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    footer {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+
+    .menu-toggle {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  nav {
+    position: absolute;
+    top: 70px;
+    right: 30px;
+    background: white;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 200px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    display: none;
+  }
+
+  nav.show {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  nav a {
+    margin: 10px 0;
+    width: 100%;
+  }
+}
+
+
+    .fixed-footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: white;
+      padding: 10px 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .footer-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #555;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .footer-icon i {
+      font-size: 20px;
+    }
+
+    .footer-icon:hover {
+      color: var(--primary);
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 32px; }
+      .hero p { font-size: 16px; }
+    }
+
+    .form-section {
+  padding: 60px 20px;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.request-form {
+  max-width: 700px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.8s ease;
+  margin-bottom: 60px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--dark);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-submit {
+  background: var(--primary);
+  color: white;
+  padding: 12px 26px;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-submit:hover {
+  background: var(--dark);
+}
+
+@media (max-width: 600px) {
+  .request-form {
+    padding: 20px;
+  }
+}
+.form-success {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e6fffa;
+  border: 1px solid #38b2ac;
+  color: #2c7a7b;
+  border-radius: 8px;
+  font-weight: 500;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="log"><img src="community.png" alt="logo"></div>
+    
+    <div class="menu-toggle" onclick="toggleMenu()">
+      <i class="fas fa-bars"></i>
+    </div>
+  
+    <nav id="navbar">
+      <a href="index.html" class="active">Home</a>
+      <a href="community.html">Communities</a>
+      <a href="feed.html">Feed</a>
+      <a class="login-head" href="login signup.html">Login</a>
+    </nav>
+  </header>
+  
+
+<section class="hero">
+  <h1>Join Communities That Matter to you</h1>
+  <p>Discover and connect with like-minded individuals around your interests.</p>
+  <button class="btn-primary" onclick="location.href='community.html'">Explore Now</button>
+</section>
+
+<h2 class="section-title">Featured Communities</h2>
+<section class="communities">
+  <div class="card">
+    <h3 >Fitness Freaks</h3>
+    <img src="https://assets.skool.com/f/5d141e577bc04e92b9dcdcd152335836/92efe331f7244b7989fe88f09896c69c624c2c1fde53400b964053d72f3c3491-md.jpg" alt="Fitness Image" />
+  <p>Share your fitness journey and learn from others.</p>
+  <!-- <button class="go" onclick="window.location.href='community.html'">Go</button> -->
+</div>
+<div class="card">
+    <h3>Tech Innovators</h3>
+    <img src="https://assets.skool.com/f/95d2b0395676418d9ed900f04277a390/ef4f30798681404e8cf22609d62c1a65ec9884e1f7f74ab0bdaf427b9d3ed277-md.jpg" alt="Fitness Image" />
+  <p>Join the discussion around latest tech trends and projects.</p>
+  <!-- <button class="go" onclick="window.location.href='community.html'">Go</button> -->
+</div>
+<div class="card">
+    <h3>Bookworms</h3>
+    <img src="https://assets.skool.com/f/e64f45d30b2f4440bc397557d7b99f66/d02259bdc00d4b44823563e25b7d8d83f5999afd04144f02867721c4ac43948d-md.jpg" alt="Fitness Image" />
+  <p>Discuss your favorite books and find new reads.</p>
+  <!-- <button class="go" onclick="window.location.href='community.html'">Go</button> -->
+</div>
+<div class="card">
+    <h3>Entertainment</h3>
+    <img src="https://assets.skool.com/f/288fb6f17690459bb195c1bcda64f8b3/891889c4068b44fa85aa876b22ae63248864d58920134588ac5ac88523fe2849-md.jpg" alt="Fitness Image" />
+  <p>Entertain yourself from a supportive community.</p>
+  <!-- <button class="go" onclick="window.location.href='community.html'">Go</button> -->
+</div>
+<div class="card">
+    <h3>Chess gang</h3>
+    <img src="https://assets.skool.com/f/5512a2e71b1649149136ea51bef78b0c/bc1fe44b176e4791ae84decd443f147bfcfe3cdb30d04e5e8eff11a2201edc4d-md.jpg" alt="Fitness Image" />
+    <p>Join our chess Gang and play with us.</p>
+    <!-- <button class="go" onclick="window.location.href='community.html'">Go</button> -->
+  </div>
+  <div class="card">
+    
+    <h3>Startup Hustlers</h3>
+    <img src="https://assets.skool.com/f/b82ea41111174deab0506cb611b9736b/ee39a2f361c14e33b8a2063f3b5323931ce48a9221774480b42f2aad9572dcfa-md.jpg" alt="Fitness Image" />
+    <p>For founders and makers building the next big thing. Share and grow together.</p>
+    <!-- <button class="go" onclick="window.location.href='community.html'">Go</button> -->
+  </div>
+</section>
+
+<h2 class="section-title">Recent Posts</h2>
+<div class="slider-wrapper">
+  <button class="scroll-button left" onclick="scrollSlider(-1)">❮</button>
+  <div class="slider-container" id="slider">
+      
+  <div class="post-card big-card">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4BlyYm3MSAfAUvVnA3clgj-3_hf3r6Y0ykw&s" alt="Fitness" />
+    <!-- <div class="community">Fitness</div> -->
+    <div class="content">Just smashed a 5k run! 🏃‍♂️💨 Feeling great</div>
+  </div>
+  <div class="post-card big-card">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7VLr3gZSqlfnybmCa1MXiBacZWB_qbIkJCg&s" alt="Tech" />
+    <!-- <div class="community">Tech</div> -->
+    <div class="content">Exploring AI agents for customer support. Recommendations?</div>
+  </div>
+  <div class="post-card big-card">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbiJ3HCgMnVLLiwvkpEByuuJaixMmSa98wag&s" alt="Books" />
+    <!-- <div class="community">Books</div> -->
+    <div class="content">Finished “Atomic Habits” — highly recommend it!</div>
+  </div>
+  <div class="post-card big-card">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2Fz37-WqM8BVN9k_WNOV7b7sTysdmuEmdkA&s" alt="Chess" />
+    <!-- <div class="community">Chess</div> -->
+    <div class="content">Beat a 1500-rated player with a bishop trap</div>
+  </div>
+  <div class="post-card big-card">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhxGdODyZq0OJ4hdosdMIFolPFirFTOI6xCA&s" alt="Startup" />
+    <!-- <div class="community">Startups</div> -->
+    <div class="content">Pitch deck ready! Launching our MVP next week 🚀</div>
+  </div>
+
+ 
+  </div>
+  <button class="scroll-button right" onclick="scrollSlider(1)">❯</button>
+</div>
+
+<section class="info-section">
+  <h3>Why Join Us?</h3>
+  <p>Our platform helps you grow your network, learn faster, and stay inspired by surrounding yourself with passionate communities. Whether you're into tech, books, fitness, or startups — we’ve got a place for you.</p>
+</section>
+
+<section class="form-section">
+  <h2 class="section-title">Request a Community / Ask a Query</h2>
+  <form class="request-form" onsubmit="submitForm(event)">
+    <div class="form-group">
+      <label for="name">Your Name</label>
+      <input type="text" id="name" placeholder="Enter your name" required />
+    </div>
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="you@example.com" required />
+    </div>
+    <div class="form-group">
+      <label for="topic">Topic / Community Name</label>
+      <input type="text" id="topic" placeholder="What would you like to suggest?" required />
+    </div>
+    <div class="form-group">
+      <label for="message">Additional Details</label>
+      <textarea id="message" rows="4" placeholder="Describe your idea or ask your question..." required></textarea>
+    </div>
+    <button type="submit" class="btn-submit">Submit Request</button>
+  </form>
+</section>
+
+
+<div class="fixed-footer">
+  <a href="index.html" class="footer-icon">
+    <i class="fas fa-home"></i>
+    <span>Home</span>
+  </a>
+  <a href="feed.html" class="footer-icon">
+    <i class="fas fa-plus-circle"></i>
+    <span>Post</span>
+  </a>
+  <a href="login signup.html" class="footer-icon">
+    <i class="fas fa-user"></i>
+    <span>Account</span>
+  </a>
+</div>
+
+<script>
+ 
+  function scrollSlider(direction) {
+    const slider = document.getElementById("slider");
+    const cardWidth = slider.offsetWidth;
+    slider.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+  }
+
+  function submitForm(event) {
+    event.preventDefault();
+    
+    // Show the success message
+    const form = event.target;
+    const message = document.createElement("div");
+    message.className = "form-success";
+    message.textContent = "✅ Thank you for your request! We'll get back to you shortly.";
+    
+    // Remove existing success messages if any
+    const existingMsg = form.querySelector(".form-success");
+    if (existingMsg) existingMsg.remove();
+    
+    form.appendChild(message);
+    form.reset();
+
+    // Hide the message after 5 seconds
+    setTimeout(() => {
+      message.style.opacity = "0";
+      setTimeout(() => message.remove(), 500); // remove after fade-out
+    }, 5000);
+  }
+  function toggleMenu() {
+    document.getElementById('navbar').classList.toggle('show');
+  }
+
+</script>
+
+
+</body>
+</html>
