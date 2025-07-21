@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stuti Sharan | Portfolio</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .code-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('https://cdn.pixabay.com/photo/2016/04/08/11/31/code-1319077_960_720.jpg');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.06;
+      filter: blur(4px);
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="code-bg"></div>
+  <section class="py-24" data-aos="fade-down">
+    <div class="max-w-4xl mx-auto px-6 mb-12 text-center">
+      <h2 class="text-3xl font-bold text-purple-500 mb-4">Personal Information</h2>
+      <p class="text-lg text-gray-300">📍 Farrukhabad, Uttar Pradesh</p>
+      <p class="text-lg text-gray-300">📧 stutisharan0@gmail.com</p>
+      <p class="text-lg text-gray-300">📞 8810772241</p>
+      <p class="text-lg text-gray-300">🔗 <a href="https://www.linkedin.com/in/stuti-sharan-1b0a82310" target="_blank" class="text-purple-400 underline hover:text-purple-300">LinkedIn Profile</a></p>
+      <p class="text-lg text-gray-300">💻 <a href="https://github.com/StutiSharan/Stuti-Repo" target="_blank" class="text-purple-400 underline hover:text-purple-300">GitHub Profile</a></p>
+    </div>
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <h1 class="text-5xl font-extrabold mb-4">Hi, I'm Stuti 👩‍💻</h1>
+      <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+        A Frontend Developer skilled in React.js, Tailwind CSS, Redux, and Firebase. I bring ideas to life with clean UI, animations, and responsive designs.
+      </p>
+      <a href="#projects" class="inline-block px-8 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition">See My Projects</a>
+    </div>
+  </section>
+
+  <section id="projects" class="py-24" data-aos="fade-up">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center text-white mb-20 tracking-tight">My Projects</h2>
+
+      <div class="space-y-24">
+
+      <!-- Online Voting System -->
+        <div class="flex flex-col md:flex-row items-center gap-12" data-aos="fade-right">
+          <img src="./Hackathon/memehub-app/voting app.png" alt="Voting App" class="w-full md:w-1/2 rounded-xl shadow-lg border border-gray-700">
+          <div class="md:w-1/2">
+            <h3 class="text-3xl font-semibold text-purple-400 mb-4">Online Voting System</h3>
+            <p class="text-lg text-gray-300 mb-4">A secure, city-based digital voting platform with face verification. Built using React.js, Redux, Tailwind CSS, and Firebase.</p>
+            <a href="https://voting-app-41.netlify.app/" target="_blank" class="inline-block px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition">Live Demo</a>
+          </div>
+        </div>
+
+        <!-- MemeHub -->
+        <div class="flex flex-col md:flex-row-reverse items-center gap-12" data-aos="fade-left">
+          <img src="Hackathon/memehub-app/jokeJunction.png" alt="MemeHub" class="w-full md:w-1/2 rounded-xl shadow-lg border border-gray-700">
+          <div class="md:w-1/2">
+            <h3 class="text-3xl font-semibold text-purple-400 mb-4">MemeHub</h3>
+            <p class="text-lg text-gray-300 mb-4">A dynamic meme-sharing platform with infinite scroll and trending memes. Built using React.js and Tailwind CSS.</p>
+            <a href="https://jokejunction-41.netlify.app/" target="_blank" class="inline-block px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition">Live Demo</a>
+          </div>
+        </div>
+
+        <!-- Community Platform -->
+        <div class="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
+          <img src="Hackathon/memehub-app/community 1.png" alt="Community App" class="w-full md:w-1/2 rounded-xl shadow-lg border border-gray-700">
+          <div class="md:w-1/2">
+            <h3 class="text-3xl font-semibold text-purple-400 mb-4">Community Platform</h3>
+            <p class="text-lg text-gray-300 mb-4">A user-interest-based social platform using HTML, CSS, and JavaScript. Features include interest tagging and post sharing.</p>
+            <a href="https://community-41.netlify.app/" target="_blank" class="inline-block px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition">Live Demo</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-12 text-center text-gray-500 text-sm">
+    <p>© 2025 Stuti Sharan. All rights reserved.</p>
+  </footer>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({
+      duration: 1000,
+      once: true
+    });
+  </script>
+</body>
+</html>
