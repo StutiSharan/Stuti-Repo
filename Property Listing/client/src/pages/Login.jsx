@@ -14,7 +14,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", form);
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}api/auth/login`, form);
       login(data.token);
       navigate("/");
     } catch (err) {
@@ -24,7 +24,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.open("http://localhost:5000/api/auth/google", "_self"); // Backend route
+    window.open(`${import.meta.env.VITE_API_URL}api/auth/login`, "_self"); // Backend route
   };
 
   return (
