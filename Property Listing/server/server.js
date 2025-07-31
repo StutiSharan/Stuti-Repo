@@ -18,8 +18,10 @@ const app = express();
 dbConnect();
 
 // Middleware
-app.use(cors());
-
+app.use(cors({
+  origin: 'https://findmyhome41.netlify.app',
+  credentials: true
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.resolve('uploads')));
 
