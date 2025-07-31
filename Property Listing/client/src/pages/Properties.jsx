@@ -6,7 +6,7 @@ const Properties = () => {
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
-   axios.get(`${import.meta.env.VITE_API_BASE_URL}api/properties`)
+   axios.get(`${import.meta.env.VITE_API_URL}api/properties`)
       .then((res) => setProperties(res.data))
       .catch((err) => console.error('Error fetching properties:', err));
   }, []);
