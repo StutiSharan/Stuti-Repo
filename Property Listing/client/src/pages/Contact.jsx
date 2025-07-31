@@ -59,7 +59,7 @@ const Contact = () => {
     if (!validate()) return;
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, form);
+      await axios.post(`${import.meta.env.VITE_API_URL}api/contact`, form);
       setShowPopup(true);
       setForm({ name: "", email: "", phone: "", message: "" });
       triggerConfetti();

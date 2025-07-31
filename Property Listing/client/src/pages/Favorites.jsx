@@ -11,7 +11,7 @@ const Favorites = () => {
 
     const fetchFavorites = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/properties`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}api/properties`);
         const allProps = res.data || [];
         const matched = allProps.filter((p) => favorites.includes(p._id));
         setSavedProperties(matched);

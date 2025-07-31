@@ -20,7 +20,7 @@ const { toggleFavorite, isFavorite } = useContext(FavoritesContext);
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_URL}/api/properties`)
+      .get(`${import.meta.env.VITE_API_URL}api/properties`)
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
         setProperties(data);

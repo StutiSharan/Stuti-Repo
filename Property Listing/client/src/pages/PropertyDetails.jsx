@@ -9,7 +9,7 @@ const PropertyDetails = () => {
   const [property, setProperty] = useState(null);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/api/properties/${id}`)
+    axios.get(`${import.meta.env.VITE_API_URL}api/properties/${id}`)
       .then((res) => setProperty(res.data))
       .catch((err) => console.error("Error fetching property:", err));
   }, [id]);
