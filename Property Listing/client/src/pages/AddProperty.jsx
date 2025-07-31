@@ -31,7 +31,7 @@ export default function AddProperty() {
   const submit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/properties', {
+      await axios.post('api/properties', {
         ...form,
         price: Number(form.price),
         area: Number(form.area),
