@@ -4,10 +4,10 @@ import { FiMenu, FiX } from "react-icons/fi";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = ["Home", "About", "Skills", "Projects", "Contact", "Resume"];
+  const links = ["Home", "About", "Skills", "Projects", "Contact"];
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#0F172A]/95 text-slate-100 shadow-md backdrop-blur-md">
+    <nav className="sticky top-0 z-50 bg-[#0F172A]/95 text-slate-100 shadow-md backdrop-blur-md scroll-smooth">
       <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
         <h1 className="text-2xl font-extrabold text-cyan-400 tracking-tight">
           MyPortfolio
@@ -24,7 +24,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Links */}
-        <ul className="hidden md:flex space-x-8 font-medium">
+        <ul className="hidden md:flex  text-m space-x-8 font-medium">
           {links.map((link) => (
             <li key={link}>
               <a
@@ -36,10 +36,21 @@ const Navbar = () => {
               </a>
             </li>
           ))}
+          <li>
+            <a
+              href="/resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative group transition duration-200"
+            >
+              <span className="group-hover:text-cyan-400">Resume</span>
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+            </a>
+          </li>
         </ul>
       </div>
 
-      {/* Mobile Menu Animation */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.ul
@@ -60,6 +71,17 @@ const Navbar = () => {
                 </a>
               </li>
             ))}
+            <li>
+              <a
+                href="/resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block py-2 px-2 rounded-md hover:bg-cyan-600/20 hover:text-cyan-400 transition-colors duration-200"
+                onClick={() => setMenuOpen(false)}
+              >
+                Resume
+              </a>
+            </li>
           </motion.ul>
         )}
       </AnimatePresence>

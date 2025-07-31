@@ -47,7 +47,7 @@ for (let tech of techStack) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      Hi, I'm <span className="text-white">Your Name</span>
+      Hi, I'm <span className="text-white">Stuti Sharan</span>
     </motion.h2>
 
     <motion.p
@@ -85,7 +85,7 @@ for (let tech of techStack) {
     {/* Resume Button */}
     <motion.a
       href="/resume.pdf"
-      download
+      download="Stuti_resume.pdf"
       className="inline-block mt-6 px-6 py-3 rounded-full bg-[#38BDF8] text-[#0F172A] font-semibold hover:bg-[#0ea5e9] transition-colors duration-300 shadow-lg z-10"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
