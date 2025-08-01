@@ -70,6 +70,6 @@ property-app/
 
 ## 🧑‍💻 Developer
 Stuti Sharan
-🔗 LinkedIn
 📧 stutisharan0@gmail.com
-💻 GitHub
+💻 [GitHub](https://github.com/StutiSharan)
+
