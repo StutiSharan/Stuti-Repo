@@ -1,10 +1,10 @@
 <h1 align="center">Hi 👋, I'm Stuti Sharan</h1>
 <h3 align="center">A Passionate Full-Stack Web Developer</h3>
 
-- 🌱 I’m currently learning **TypeScript and GraphQL**
-- 🔭 I’m working on **a real estate platform, calendar app, and portfolio**
-- 💬 Ask me about **React, Node.js, Firebase, and MongoDB**
-- 📫 Reach me at: **stutisharan41@gmail.com**
+- 🌱 I’m a **full Stack Developer**
+- 🔭 I’m working on **a real estate platform, Voting system web-app**
+- 💬 Good knowledge about **React, Node.js, Firebase, and MongoDB**
+- 📫 Reach me at: **stutisharan0@gmail.com**
 
 ---
 
