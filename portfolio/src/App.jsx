@@ -37,7 +37,7 @@ function App() {
       </section>
 
       <section id="resume">
-        {/* Resume section if needed */}
+        <a href="/resume.pdf"></a>
       </section>
     </div>
   );

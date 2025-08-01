@@ -55,7 +55,8 @@ const Projects = () => (
           <img
             src={proj.image}
             alt={proj.title}
-            className="w-full md:w-1/2 h-64 object-cover rounded-xl shadow-lg"
+           className="w-full md:w-1/2 h-auto max-h-[300px] object-contain rounded-xl shadow-lg"
+
           />
 
           <div className="md:w-1/2">

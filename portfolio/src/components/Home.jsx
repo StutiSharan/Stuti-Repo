@@ -11,7 +11,7 @@ const Home = () => (
 >
   {/* 🌟 Glowy Animated Code Background */}
   <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
-    <div className="w-full h-full animate-pulse opacity-100 blur-sm">
+    <div className="w-full mt-30  h-full animate-pulse opacity-100 blur-sm">
       <pre className="text-xs md:text-sm text-[#38BDF8] font-mono whitespace-pre-wrap leading-relaxed glow-effect px-4 py-10">
 {`const greet = (name) => {
   return \`Hello, \${name}! Welcome to my portfolio 🚀\`;
@@ -31,14 +31,15 @@ for (let tech of techStack) {
     <div className="absolute bottom-[-100px] right-[-100px] w-[300px] h-[300px] bg-[#0ea5e9] rounded-full opacity-20 blur-3xl animate-pulse z-0" />
 
     {/* Profile Image */}
-    <motion.img
-      src={profile}
-      alt="Profile"
-      className="w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-[#38BDF8] shadow-lg z-10"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8 }}
-    />
+   <motion.img
+  src={profile}
+  alt="Profile"
+  className="w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-[#38BDF8] shadow-lg z-10 mt-20" // <-- added mt-20
+  initial={{ opacity: 0, scale: 0.8 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.8 }}
+/>
+
 
     {/* Name & Typewriter */}
     <motion.h2

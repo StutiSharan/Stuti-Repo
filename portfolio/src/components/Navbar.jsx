@@ -1,90 +1,85 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX } from "react-icons/fi";
+import React, { useState } from 'react';
+import { Link } from 'react-scroll';
+import { Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = ["Home", "About", "Skills", "Projects", "Contact"];
+  const links = ['Home', 'About', 'Skills', 'Projects', 'Contact', 'Resume'];
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#0F172A]/95 text-slate-100 shadow-md backdrop-blur-md scroll-smooth">
-      <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
-        <h1 className="text-2xl font-extrabold text-cyan-400 tracking-tight">
-          MyPortfolio
-        </h1>
-
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="text-3xl text-cyan-400 focus:outline-none"
-          >
-            {menuOpen ? <FiX /> : <FiMenu />}
-          </button>
-        </div>
-
-        {/* Desktop Links */}
-        <ul className="hidden md:flex  text-m space-x-8 font-medium">
-          {links.map((link) => (
-            <li key={link}>
+    <nav className="fixed top-0 w-full bg-white/10 backdrop-blur-md z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+        <div className="text-2xl font-bold text-cyan-500">Stuti's Portfolio</div>
+        <div className="hidden md:flex text-m font-bold space-x-6">
+          {links.map((link) =>
+            link === 'Resume' ? (
               <a
-                href={`#${link.toLowerCase()}`}
-                className="relative group transition duration-200"
-              >
-                <span className="group-hover:text-cyan-400">{link}</span>
-                <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-              </a>
-            </li>
-          ))}
-          <li>
-            <a
-              href="/resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative group transition duration-200"
-            >
-              <span className="group-hover:text-cyan-400">Resume</span>
-              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.ul
-            className="md:hidden bg-[#0F172A] px-6 pb-6 pt-2 space-y-3 text-left font-medium"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {links.map((link) => (
-              <li key={link}>
-                <a
-                  href={`#${link.toLowerCase()}`}
-                  className="block py-2 px-2 rounded-md hover:bg-cyan-600/20 hover:text-cyan-400 transition-colors duration-200"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link}
-                </a>
-              </li>
-            ))}
-            <li>
-              <a
+                key={link}
                 href="/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block py-2 px-2 rounded-md hover:bg-cyan-600/20 hover:text-cyan-400 transition-colors duration-200"
+                className="hover:text-cyan-400 text-white transition-colors duration-200"
+              >
+                {link}
+              </a>
+            ) : (
+              <Link
+                key={link}
+                to={link.toLowerCase()}
+                smooth={true}
+                duration={500}
+                offset={-70}
+                className="cursor-pointer text-white hover:text-cyan-400 transition-colors duration-200"
+              >
+                {link}
+              </Link>
+            )
+          )}
+        </div>
+
+        {/* Mobile menu button */}
+        <div className="text-white font-bold text-m md:hidden">
+          <button onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu dropdown */}
+      {menuOpen && (
+        <div className="md:hidden w-full text-cyan  bg-white/10 backdrop-blur-md px-4 pb-4 space-y-3">
+          {links.map((link) =>
+            link === 'Resume' ? (
+              <a
+                key={link}
+                href="/resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block py-2 px-2 text-white rounded-md hover:bg-cyan-600/20 hover:text-cyan-400 transition-colors duration-200"
                 onClick={() => setMenuOpen(false)}
               >
-                Resume
+                {link}
               </a>
-            </li>
-          </motion.ul>
-        )}
-      </AnimatePresence>
+            ) : (
+              <a
+                key={link}
+                href={`#${link.toLowerCase()}`}
+                className="block py-2 px-2 rounded-md text-white hover:bg-cyan-600/20 hover:text-cyan-400 transition-colors duration-200"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const section = document.getElementById(link.toLowerCase());
+                  if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  setMenuOpen(false);
+                }}
+              >
+                {link}
+              </a>
+            )
+          )}
+        </div>
+      )}
     </nav>
   );
 };
