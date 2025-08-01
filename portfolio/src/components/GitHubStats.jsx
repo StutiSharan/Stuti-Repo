@@ -14,8 +14,7 @@ const GitHubStats = () => (
 "        alt="GitHub Stats"
         className="rounded-xl shadow-lg transition-transform hover:scale-105 duration-300"
       />
-      <img
-        src="https://github-readme-streak-stats.herokuapp.com/?user=StutiSharan&theme=tokyonight"
+    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=StutiSharan&layout=compact&theme=tokyonight"
         alt="GitHub Streak"
         className="rounded-xl shadow-lg transition-transform hover:scale-105 duration-300"
       />
