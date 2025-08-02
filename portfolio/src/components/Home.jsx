@@ -85,7 +85,7 @@ for (let tech of techStack) {
 
     {/* Resume Button */}
     <motion.a
-      href="/resume.pdf"
+      href="/portfolio/resume.pdf"
       download="Stuti_resume.pdf"
       className="inline-block mt-6 px-6 py-3 rounded-full bg-[#38BDF8] text-[#0F172A] font-semibold hover:bg-[#0ea5e9] transition-colors duration-300 shadow-lg z-10"
       whileHover={{ scale: 1.05 }}

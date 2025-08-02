@@ -52,7 +52,7 @@ const Navbar = () => {
             link === 'Resume' ? (
               <a
                 key={link}
-                href="/resume.pdf"
+                href="/portfolio/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block py-2 px-2 text-white rounded-md hover:bg-cyan-600/20 hover:text-cyan-400 transition-colors duration-200"
