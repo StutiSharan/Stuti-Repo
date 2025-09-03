@@ -1,4 +1,3 @@
-// AddNoteModal.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -14,27 +13,24 @@ export default function AddNoteModal({ isOpen, onClose, onNoteAdded, note }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!title.trim()) return alert("Title is required");
     setLoading(true);
-
     try {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
       if (file) formData.append("file", file);
 
-    const res = await axios.post(
-  "https://stuti-repo-1.onrender.com/api/notes",
-  formData,
-  {
-    headers: {
-      Authorization: `Bearer ${user.token}`,
-      "Content-Type": "multipart/form-data",
-    },
-    // withCredentials: true, // remove this if using token auth
-  }
-);
-
-
+      const res = await axios.post(
+        "https://stuti-repo-1.onrender.com/api/notes",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       onNoteAdded(res.data);
       setTitle("");
@@ -43,7 +39,7 @@ export default function AddNoteModal({ isOpen, onClose, onNoteAdded, note }) {
       onClose();
     } catch (err) {
       console.error("Error adding note:", err);
-      alert("Failed to add note. Check console for details.");
+      alert("Failed to add note");
     } finally {
       setLoading(false);
     }
@@ -58,10 +54,11 @@ export default function AddNoteModal({ isOpen, onClose, onNoteAdded, note }) {
         <h2 className="text-xl font-semibold">{note ? "Edit Note" : "Add Note"}</h2>
         <input
           type="text"
-          placeholder="Title (optional)"
+          placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="border p-2 rounded"
+          required
         />
         <textarea
           placeholder="Description"
@@ -71,11 +68,7 @@ export default function AddNoteModal({ isOpen, onClose, onNoteAdded, note }) {
         />
         <input type="file" onChange={(e) => setFile(e.target.files[0])} />
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 rounded"
-          >
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">
             Cancel
           </button>
           <button
