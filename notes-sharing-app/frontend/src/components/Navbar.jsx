@@ -99,7 +99,10 @@ export default function Navbar({ onAddNoteClick }) {
               Admin Panel
             </Link>
           )}
-          <span className="text-white font-semibold">{user?.name}</span>
+        <span className="text-white font-semibold border-l border-white/40 pl-3">
+  {user?.name || user?.email || "Guest"}
+</span>
+
           <button
             onClick={() => {
               handleLogout();

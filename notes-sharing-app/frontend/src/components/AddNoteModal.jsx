@@ -11,7 +11,7 @@ export default function AddNoteModal({ isOpen, onClose, onNoteAdded, note }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return alert("Title is required");
     setLoading(true);
@@ -26,13 +26,13 @@ export default function AddNoteModal({ isOpen, onClose, onNoteAdded, note }) {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      onNoteAdded(res.data);
+      onNoteAdded?.(res.data); // ✅ optional chaining
       setTitle("");
       setDescription("");
       setFile(null);

@@ -14,15 +14,12 @@ export default function ShareModal({ noteId, isOpen, onClose }) {
     if (!email) return alert("Enter email");
     setLoading(true);
     try {
-      await axios.post(
-        `https://stuti-repo-1.onrender.com/api/notes/${noteId}/share`,
-        { email },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
+     await axios.post(
+  `https://stuti-repo-1.onrender.com/api/notes/share/${noteId}`,
+  { email },
+  { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+);
+
       alert(`Note shared with ${email}`);
       setEmail("");
       onClose();

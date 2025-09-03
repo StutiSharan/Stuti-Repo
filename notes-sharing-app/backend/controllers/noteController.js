@@ -21,14 +21,23 @@ export const createNote = async (req, res) => {
 
 export const getNotes = async (req, res) => {
   try {
-    const myNotes = await Note.find({ owner: req.user._id });
-    const sharedNotes = await Note.find({ sharedWith: req.user._id });
+    // Populate sharedWith and owner to get emails
+    const myNotes = await Note.find({ owner: req.user._id })
+      .populate("sharedWith", "email name")
+      .populate("owner", "email name");
+
+    const sharedNotes = await Note.find({ sharedWith: req.user._id })
+      .populate("sharedWith", "email name")
+      .populate("owner", "email name");
+
     res.json({ myNotes, sharedNotes });
   } catch (err) {
     console.error("Error fetching notes:", err);
     res.status(500).json({ message: err.message || "Server error" });
   }
 };
+
+
 
 export const updateNote = async (req, res) => {
   try {

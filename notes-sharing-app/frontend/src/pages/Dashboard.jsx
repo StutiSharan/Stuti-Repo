@@ -17,25 +17,25 @@ export default function Dashboard() {
   const [noteToShare, setNoteToShare] = useState(null);
 
   // Fetch notes
-  useEffect(() => {
-    const fetchNotes = async () => {
-      if (!user) return;
-      try {
-        const res = await axios.get(
-          "https://stuti-repo-1.onrender.com/api/notes",
-          { headers: { Authorization: `Bearer ${user.token}` } }
-        );
-        const allNotes = [...(res.data.myNotes || []), ...(res.data.sharedNotes || [])];
-        setNotes(allNotes);
-      } catch (err) {
-        console.error("Error fetching notes:", err);
-        setNotes([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotes();
-  }, [user]);
+useEffect(() => {
+  const fetchNotes = async () => {
+    if (!user) return; // wait for user to be loaded
+    try {
+      const res = await axios.get("https://stuti-repo-1.onrender.com/api/notes");
+      const allNotes = [...(res.data.myNotes || []), ...(res.data.sharedNotes || [])];
+      setNotes(allNotes);
+    } catch (err) {
+      console.error("Error fetching notes:", err);
+      setNotes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchNotes();
+}, [user]);
+
+
+
 
   if (loading) return <p className="text-center mt-10">Loading notes...</p>;
 
@@ -49,17 +49,18 @@ export default function Dashboard() {
       : filteredNotes.filter((note) => note.sharedWith?.includes(user._id));
 
   // Delete note function
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`https://stuti-repo-1.onrender.com/api/notes/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      setNotes((prev) => prev.filter((n) => n._id !== id));
-    } catch (err) {
-      console.error("Error deleting note:", err);
-      alert("Failed to delete note");
-    }
-  };
+ const handleDelete = async (noteId) => {
+  try {
+    await axios.delete(
+      `https://stuti-repo-1.onrender.com/api/notes/${noteId}`,
+      { headers: { Authorization: `Bearer ${user.token}` } }
+    );
+    setNotes(prev => prev.filter(n => n._id !== noteId));
+  } catch (err) {
+    console.error("Error deleting note:", err);
+    alert("Failed to delete note");
+  }
+};
 
   return (
     <div className="p-4 sm:p-6">
@@ -101,15 +102,16 @@ export default function Dashboard() {
       </button>
 
       {/* Notes List */}
-      <NotesList
-        notes={displayedNotes}
-        onEdit={(note) => setSelectedNote(note)}
-        onDelete={handleDelete}
-        onShare={(note) => {
-          setNoteToShare(note._id);
-          setIsShareModalOpen(true);
-        }}
-      />
+     <NotesList
+  notes={displayedNotes}
+  onEdit={(note) => setSelectedNote(note)}
+  onDelete={handleDelete}  // ✅ pass the function, not just the ID
+  onShare={(note) => {
+    setNoteToShare(note._id);
+    setIsShareModalOpen(true);
+  }}
+/>
+
 
       {/* Add Note Modal */}
       <AddNoteModal
@@ -119,16 +121,16 @@ export default function Dashboard() {
       />
 
       {/* Edit Note Modal */}
-      {selectedNote && (
-        <AddNoteModal
-          isOpen={!!selectedNote}
-          note={selectedNote}
-          onClose={() => setSelectedNote(null)}
-          onNoteAdded={(updatedNote) =>
-            setNotes((prev) => prev.map((n) => (n._id === updatedNote._id ? updatedNote : n)))
-          }
-        />
-      )}
+    {selectedNote && (
+  <AddNoteModal
+    isOpen={!!selectedNote}
+    note={selectedNote}
+    onClose={() => setSelectedNote(null)}
+    onNoteAdded={(updatedNote) =>
+      setNotes((prev) => prev.map((n) => (n._id === updatedNote._id ? updatedNote : n)))
+    }
+  />
+)}
 
       {/* Share Modal */}
       {noteToShare && (

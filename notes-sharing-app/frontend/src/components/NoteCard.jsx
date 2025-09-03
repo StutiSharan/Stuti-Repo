@@ -21,13 +21,20 @@ export default function NoteCard({ note, onEdit, onDelete, onShare }) {
       <div className="flex gap-2 justify-end">
         <button onClick={() => onShare(note)} className="px-2 py-1 text-sm bg-blue-500 text-white rounded">Share</button>
         {canEdit && <button onClick={() => onEdit(note)} className="px-2 py-1 text-sm bg-yellow-500 text-white rounded">Edit</button>}
-        {canDelete && <button onClick={() => onDelete(note)} className="px-2 py-1 text-sm bg-red-500 text-white rounded">Delete</button>}
+        {canDelete && <button
+  onClick={() => onDelete(note._id)}
+  className="px-2 py-1 bg-red-500 text-white rounded"
+>
+  Delete
+</button>
+}
       </div>
-      {note.sharedWith?.length > 0 && (
-        <div className="text-xs mt-3 text-gray-500">
-         Shared with: {note.sharedWith.map((u) => u.email).join(", ")}
-        </div>
-      )}
+    {note.sharedWith?.length > 0 && (
+  <div className="text-xs mt-3 text-gray-500">
+    Shared with: {note.sharedWith.map((u) => u.email || u).join(", ")}
+  </div>
+)}
+
     </div>
   );
 }
