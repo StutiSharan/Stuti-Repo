@@ -12,7 +12,10 @@ connectDB();
 const app = express();
 
 // CORS setup – allow only your frontend origin and credentials
-const allowedOrigin = "https://share-notes-41.netlify.app"; // your frontend URL
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://share-notes-41.netlify.app"
+];// your frontend URL
 
 app.use(cors({
   origin: allowedOrigin,
