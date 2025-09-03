@@ -43,11 +43,23 @@ export default function Dashboard() {
     note.title?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Filter notes by tab
   const displayedNotes =
     tab === "my"
       ? filteredNotes.filter((note) => note.owner === user._id)
       : filteredNotes.filter((note) => note.sharedWith?.includes(user._id));
+
+  // Delete note function
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`https://stuti-repo-1.onrender.com/api/notes/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setNotes((prev) => prev.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error("Error deleting note:", err);
+      alert("Failed to delete note");
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6">
@@ -92,7 +104,7 @@ export default function Dashboard() {
       <NotesList
         notes={displayedNotes}
         onEdit={(note) => setSelectedNote(note)}
-        onDelete={(id) => setNotes((prev) => prev.filter((n) => n._id !== id))}
+        onDelete={handleDelete}
         onShare={(note) => {
           setNoteToShare(note._id);
           setIsShareModalOpen(true);
