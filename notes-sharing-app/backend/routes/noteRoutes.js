@@ -1,12 +1,15 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import multer from "multer";
 import { createNote, getNotes, updateNote, deleteNote, shareNote } from "../controllers/noteController.js";
+import { protect } from "../middleware/authMiddleware.js"; // your auth middleware
 
 const router = express.Router();
-router.post("/", protect, createNote);
+const upload = multer({ dest: "uploads/" });
+
 router.get("/", protect, getNotes);
+router.post("/", protect, upload.single("file"), createNote);
 router.put("/:id", protect, updateNote);
 router.delete("/:id", protect, deleteNote);
-router.post("/:id/share", protect, shareNote);
+router.post("/share/:id", protect, shareNote);
 
 export default router;

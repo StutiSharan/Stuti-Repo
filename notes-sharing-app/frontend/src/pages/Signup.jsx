@@ -1,52 +1,41 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-function Signup() {
-  const { login } = useAuth();
+export default function Signup() {
+  const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    login({ name: form.name, email: form.email, role: "user" });
-    navigate("/");
+    setLoading(true);
+    try {
+      await signup(name, email, password);
+      navigate("/");
+    } catch (err) {
+      alert(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <form onSubmit={handleSubmit} className="bg-white/10 p-6 rounded-xl shadow-lg w-96">
-        <h2 className="text-2xl text-white font-bold mb-4">Signup</h2>
-        <input
-          type="text"
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full p-2 mb-3 rounded-lg"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full p-2 mb-3 rounded-lg"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="w-full p-2 mb-3 rounded-lg"
-        />
-        <button className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition">
-          Signup
-        </button>
-        <p className="text-gray-200 mt-3 text-sm">
-          Already have an account? <Link to="/login" className="text-cyan-300">Login</Link>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <form onSubmit={submit} className="bg-white p-6 rounded shadow w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-4">Create account</h1>
+        <input className="w-full p-2 mb-3 border rounded" placeholder="Full name" value={name} onChange={(e)=>setName(e.target.value)} required />
+        <input className="w-full p-2 mb-3 border rounded" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required />
+        <input className="w-full p-2 mb-3 border rounded" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} required />
+        <button className="w-full py-2 bg-cyan-600 text-white rounded">{loading ? "Signing up..." : "Sign up"}</button>
+
+        <p className="mt-3 text-sm text-gray-600 text-center">
+          Already have an account? <Link to="/login" className="text-cyan-600">Login</Link>
         </p>
       </form>
     </div>
   );
 }
-
-export default Signup;
