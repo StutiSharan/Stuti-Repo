@@ -1,13 +1,16 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
-
-const STATIC_OTP=process.env.EXPO_PUBLIC_STATIC_OTP;
+import { sendOtpApi, verifyOtpApi } from "../../api/authApi";
 
 export default function Login(){
   const [step,setStep]=useState<"FORM"|"OTP">("FORM");
   const [timer,setTimer]=useState(60);
   const [otp,setOtp]=useState("");
+
+  const [fullName,setFullName]=useState("");
+  const [phone,setPhone]=useState("");
+  const [loading,setLoading]=useState(false);
 
   useEffect(()=>{
     let interval:any;
@@ -17,22 +20,47 @@ export default function Login(){
     return()=>clearInterval(interval);
   },[step,timer]);
 
-  const sendOtp=()=>{
-    setStep("OTP");
-    setTimer(60);
-  };
-
-  const verifyOtp=()=>{
-    if(otp!==STATIC_OTP){
-      Alert.alert("Invalid OTP","Please enter correct OTP");
+  // SEND OTP
+  const sendOtp=async()=>{
+    if(!fullName||!phone){
+      Alert.alert("Error","Please enter name and phone number");
       return;
     }
-    router.replace("/(tabs)/candidate");
+    try{
+      setLoading(true);
+      await sendOtpApi(fullName,phone);
+      setStep("OTP");
+      setTimer(60);
+    }catch(err:any){
+      Alert.alert("Error",err.message);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  // VERIFY OTP
+  const verifyOtp=async()=>{
+    if(otp.length!==6){
+      Alert.alert("Invalid OTP","Enter 6-digit OTP");
+      return;
+    }
+    try{
+      setLoading(true);
+      const res=await verifyOtpApi(phone,otp);
+
+      // 🔐 Save token later (AsyncStorage)
+      // await AsyncStorage.setItem("token",res.token);
+
+      router.replace("/(tabs)/candidate");
+    }catch(err:any){
+      Alert.alert("Error",err.message);
+    }finally{
+      setLoading(false);
+    }
   };
 
   return(
     <View style={styles.container}>
-    
       <View style={styles.card}>
         <Text style={styles.title}>
           {step==="FORM" ? "Candidate Login" : "Verify OTP"}
@@ -40,11 +68,30 @@ export default function Login(){
 
         {step==="FORM" && (
           <>
-            <TextInput placeholder="Full Name" style={styles.input} />
-            <TextInput placeholder="Phone Number" keyboardType="number-pad" maxLength={10} style={styles.input} />
+            <TextInput
+              placeholder="Full Name"
+              value={fullName}
+              onChangeText={setFullName}
+              style={styles.input}
+            />
 
-            <TouchableOpacity style={styles.button} onPress={sendOtp}>
-              <Text style={styles.buttonText}>Send OTP</Text>
+            <TextInput
+              placeholder="Phone Number"
+              keyboardType="number-pad"
+              maxLength={10}
+              value={phone}
+              onChangeText={setPhone}
+              style={styles.input}
+            />
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={sendOtp}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Sending..." : "Send OTP"}
+              </Text>
             </TouchableOpacity>
           </>
         )}
@@ -60,8 +107,14 @@ export default function Login(){
               style={styles.input}
             />
 
-            <TouchableOpacity style={styles.button} onPress={verifyOtp}>
-              <Text style={styles.buttonText}>Verify & Continue</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={verifyOtp}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Verifying..." : "Verify & Continue"}
+              </Text>
             </TouchableOpacity>
 
             <Text style={styles.timer}>
@@ -73,11 +126,9 @@ export default function Login(){
     </View>
   );
 }
+
 const styles=StyleSheet.create({
   container:{flex:1,backgroundColor:"#0A1F44",justifyContent:"center",padding:20},
-  header:{alignItems:"center",marginBottom:30},
-  brand:{fontSize:26,fontWeight:"800",color:"#fff"},
-  subtitle:{fontSize:14,color:"#cfd8dc",marginTop:4},
   card:{backgroundColor:"#fff",borderRadius:16,padding:20,elevation:6},
   title:{fontSize:22,fontWeight:"700",color:"#0A1F44",marginBottom:20,textAlign:"center"},
   input:{height:50,borderWidth:1,borderColor:"#e0e0e0",borderRadius:12,paddingHorizontal:15,fontSize:16,marginBottom:15,backgroundColor:"#fafafa"},
