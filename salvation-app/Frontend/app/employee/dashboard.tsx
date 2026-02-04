@@ -1,10 +1,56 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import BackButton from "../../components/BackButton";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getEmployeeProfile } from "../../api/employeeApi";
 
 export default function Dashboard(){
+  const [loading,setLoading]=useState(true);
+  const [employeeId,setEmployeeId]=useState("XXXX");
+  const [employeeName,setEmployeeName]=useState("Employee Name");
+
+  /* ---------- LOAD PROFILE ---------- */
+  useEffect(()=>{
+    const loadProfile=async()=>{
+      try{
+        const storedEmpId=await AsyncStorage.getItem("employeeId");
+
+        if(!storedEmpId){
+          setLoading(false);
+          return;
+        }
+
+        setEmployeeId(storedEmpId);
+
+        const res=await getEmployeeProfile(storedEmpId);
+
+        if(res?.employee){
+          setEmployeeName(
+            res.employee.fullName?.trim() || "Employee Name"
+          );
+        }
+
+      }catch(err){
+        console.log("⚠️ Dashboard profile fetch failed");
+      }finally{
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  },[]);
+
+  if(loading){
+    return(
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#0A1F44"/>
+      </View>
+    );
+  }
+
   return(
     <View style={styles.container}>
       <StatusBar style="light" backgroundColor="#0A1F44" />
@@ -19,8 +65,8 @@ export default function Dashboard(){
         {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.welcome}>Welcome</Text>
-          <Text style={styles.name}>Employee Name</Text>
-          <Text style={styles.empId}>Employee ID: EMP-1023</Text>
+          <Text style={styles.name}>{employeeName}</Text>
+          <Text style={styles.empId}>Employee ID: {employeeId}</Text>
         </View>
 
         {/* STATS */}
@@ -42,8 +88,8 @@ export default function Dashboard(){
         <View style={styles.profileCard}>
           <MaterialIcons name="account-circle" size={48} color="#0A1F44" />
           <View style={{marginLeft:12}}>
-            <Text style={styles.profileName}>Employee Name</Text>
-            <Text style={styles.profileRole}>Designation</Text>
+            <Text style={styles.profileName}>{employeeName}</Text>
+            <Text style={styles.profileRole}>Employee</Text>
           </View>
         </View>
 
@@ -67,9 +113,25 @@ export default function Dashboard(){
   );
 }
 
+/* ---------- STYLES ---------- */
 const styles=StyleSheet.create({
+  loader:{
+    flex:1,
+    justifyContent:"center",
+    alignItems:"center",
+    backgroundColor:"#f4f6f8"
+  },
   container:{flex:1,backgroundColor:"#f4f6f8"},
-  navbar:{flexDirection:"row",alignItems:"center",paddingTop:48,paddingBottom:14,paddingHorizontal:20,backgroundColor:"#0A1F44",borderBottomLeftRadius:20,borderBottomRightRadius:20},
+  navbar:{
+    flexDirection:"row",
+    alignItems:"center",
+    paddingTop:48,
+    paddingBottom:14,
+    paddingHorizontal:20,
+    backgroundColor:"#0A1F44",
+    borderBottomLeftRadius:20,
+    borderBottomRightRadius:20
+  },
   navTitle:{fontSize:20,fontWeight:"700",color:"#fff",marginLeft:12},
   header:{padding:20},
   welcome:{fontSize:14,color:"#757575"},

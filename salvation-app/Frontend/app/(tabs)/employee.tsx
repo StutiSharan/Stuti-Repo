@@ -1,66 +1,170 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import {
+  sendEmployeeOtpApi,
+  verifyEmployeeOtpApi
+} from "../../api/employeeApi";
 
 export default function Employee(){
+  const [step,setStep]=useState<"FORM"|"OTP">("FORM");
+  const [employeeId,setEmployeeId]=useState("");
+  const [mobile,setMobile]=useState("");
+  const [otp,setOtp]=useState("");
+  const [loading,setLoading]=useState(false);
+
+  /* ---------- SEND OTP ---------- */
+  const sendOtp=async()=>{
+    if(!employeeId || !mobile){
+      Alert.alert("Required","Enter Employee ID and Mobile Number");
+      return;
+    }
+
+    try{
+      setLoading(true);
+
+      await sendEmployeeOtpApi({
+        employeeId,
+        loginMobile: mobile
+      });
+
+      setLoading(false);
+      setStep("OTP");
+      Alert.alert("OTP Sent","Please check your phone");
+
+    }catch(err:any){
+      setLoading(false);
+      Alert.alert("Error",err.message);
+    }
+  };
+
+  /* ---------- VERIFY OTP ---------- */
+  const verifyOtp=async()=>{
+    if(!otp){
+      Alert.alert("Required","Enter OTP");
+      return;
+    }
+
+    try{
+      setLoading(true);
+
+      const res=await verifyEmployeeOtpApi({
+        employeeId,
+        otp,
+         loginMobile: mobile
+      });
+
+      // 🔐 Save token
+      await AsyncStorage.setItem("employeeToken",res.token);
+      await AsyncStorage.setItem("employeeId",res.employeeId);
+
+      setLoading(false);
+      router.replace("/employee/dashboard");
+
+    }catch(err:any){
+      setLoading(false);
+      Alert.alert("Invalid OTP",err.message);
+    }
+  };
+
   return(
     <View style={styles.container}>
       <StatusBar style="light" backgroundColor="#0A1F44" />
 
-      {/* Header */}
+      {/* HEADER */}
       <View style={styles.header}>
         <Ionicons name="briefcase" size={42} color="#ffffff" />
         <Text style={styles.brand}>Employee Portal</Text>
         <Text style={styles.subtitle}>Authorized access only</Text>
       </View>
 
-      {/* Login Card */}
+      {/* CARD */}
       <View style={styles.card}>
         <Text style={styles.title}>Employee Login</Text>
 
-        <View style={styles.inputBox}>
-          <Ionicons name="id-card-outline" size={20} color="#607d8b" />
-          <TextInput
-            placeholder="Employee ID"
-            placeholderTextColor="#9e9e9e"
-            style={styles.input}
-          />
-        </View>
+        {step==="FORM" && (
+          <>
+            <View style={styles.inputBox}>
+              <Ionicons name="id-card-outline" size={20} color="#607d8b" />
+              <TextInput
+                placeholder="Employee ID"
+                value={employeeId}
+                onChangeText={setEmployeeId}
+                style={styles.input}
+              />
+            </View>
 
-        <View style={styles.inputBox}>
-          <Ionicons name="lock-closed-outline" size={20} color="#607d8b" />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#9e9e9e"
-            secureTextEntry
-            style={styles.input}
-          />
-        </View>
+            <View style={styles.inputBox}>
+              <Ionicons name="call-outline" size={20} color="#607d8b" />
+              <TextInput
+                placeholder="Registered Mobile Number"
+                keyboardType="number-pad"
+                maxLength={10}
+                value={mobile}
+                onChangeText={setMobile}
+                style={styles.input}
+              />
+            </View>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={()=>router.push("/employee/dashboard")}
-        >
-          <Text style={styles.buttonText}>Login to Dashboard</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={sendOtp} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Send OTP</Text>
+              )}
+            </TouchableOpacity>
+          </>
+        )}
+
+        {step==="OTP" && (
+          <>
+            <View style={styles.inputBox}>
+              <Ionicons name="key-outline" size={20} color="#607d8b" />
+              <TextInput
+                placeholder="Enter OTP"
+                keyboardType="number-pad"
+                maxLength={6}
+                value={otp}
+                onChangeText={setOtp}
+                style={styles.input}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={verifyOtp} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Verify & Login</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={()=>setStep("FORM")}>
+              <Text style={styles.resend}>Change details</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         <Text style={styles.info}>
-          Contact HR if you forgot your credentials
+          Contact HR if you face login issues
         </Text>
       </View>
     </View>
   );
 }
+
+/* ---------- STYLES (UNCHANGED) ---------- */
 const styles=StyleSheet.create({
-container:{
-  flex:1,
-  backgroundColor:"#0A1F44",
-  justifyContent:"center",
-  padding:20,
-  paddingBottom:80   // 👈 IMPORTANT: fills space behind floating tabs
-},
+  container:{
+    flex:1,
+    backgroundColor:"#0A1F44",
+    justifyContent:"center",
+    padding:20,
+    paddingBottom:80
+  },
   header:{
     alignItems:"center",
     marginBottom:30
@@ -80,9 +184,6 @@ container:{
     backgroundColor:"#ffffff",
     borderRadius:18,
     padding:20,
-    shadowColor:"#000",
-    shadowOpacity:0.15,
-    shadowRadius:10,
     elevation:6
   },
   title:{
@@ -122,8 +223,14 @@ container:{
     fontSize:16,
     fontWeight:"600"
   },
+  resend:{
+    marginTop:12,
+    textAlign:"center",
+    color:"#0A1F44",
+    fontWeight:"600"
+  },
   info:{
-    marginTop:15,
+    marginTop:18,
     textAlign:"center",
     fontSize:13,
     color:"#757575"
