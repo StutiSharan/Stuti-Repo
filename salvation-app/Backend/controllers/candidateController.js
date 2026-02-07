@@ -83,3 +83,25 @@ exports.createCandidate = async(req,res)=>{
     res.status(500).json({message:"Server error"});
   }
 };
+exports.getCandidateByMobile = async(req,res)=>{
+  try{
+    let mobile = req.params.mobile;
+
+    // ✅ normalize to 10 digits
+    if(mobile.startsWith("+91")){
+      mobile = mobile.slice(3);
+    }
+
+    const candidate = await Candidate.findOne({ mobile });
+
+    if(!candidate){
+      return res.status(404).json({ message:"Not found" });
+    }
+
+    res.json({ candidate });
+
+  }catch(err){
+    res.status(500).json({ message:"Server error" });
+  }
+};
+

@@ -50,3 +50,27 @@ export const createCandidateApi = async(data:{
     throw err;
   }
 };
+export const getCandidateByMobileApi = async(mobile:string)=>{
+  try{
+    const res = await fetch(
+      `${API_BASE_URL}/candidates/by-mobile/${mobile}`,
+      {
+        method:"GET",
+        headers:{ "Content-Type":"application/json" }
+      }
+    );
+
+    const result = await res.json();
+
+    if(!res.ok){
+      // 🔕 404 means "not registered yet" → this is OK
+      throw new Error(result.message || "Not found");
+    }
+
+    return result;
+
+  }catch(err:any){
+    console.log("ℹ️ getCandidateByMobileApi:",err.message);
+    throw err;
+  }
+};

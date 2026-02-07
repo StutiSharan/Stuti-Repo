@@ -12,6 +12,7 @@ export default function Login(){
   const [phone,setPhone]=useState("");
   const [loading,setLoading]=useState(false);
 
+  // ⏱ OTP timer
   useEffect(()=>{
     let interval:any;
     if(step==="OTP" && timer>0){
@@ -20,17 +21,41 @@ export default function Login(){
     return()=>clearInterval(interval);
   },[step,timer]);
 
-  // SEND OTP
+  // 🧹 Validators
+  const validateName=()=>{
+    const name=fullName.trim();
+    if(!name)return "Name is required";
+    if(name.length>32)return "Name can be max 32 characters";
+    if(!/^[A-Za-z ]+$/.test(name))return "Name can contain only letters";
+    return null;
+  };
+
+  const validatePhone=()=>{
+    if(!/^\d{10}$/.test(phone))return "Phone number must be 10 digits";
+    return null;
+  };
+
+  // 📩 SEND OTP
   const sendOtp=async()=>{
-    if(!fullName||!phone){
-      Alert.alert("Error","Please enter name and phone number");
+    const nameError=validateName();
+    if(nameError){
+      Alert.alert("Invalid Name",nameError);
       return;
     }
+
+    const phoneError=validatePhone();
+    if(phoneError){
+      Alert.alert("Invalid Phone",phoneError);
+      return;
+    }
+
     try{
       setLoading(true);
-      await sendOtpApi(fullName,phone);
+      const formattedPhone=`+91${phone}`;
+      await sendOtpApi(fullName.trim(),formattedPhone);
       setStep("OTP");
       setTimer(60);
+      setOtp("");
     }catch(err:any){
       Alert.alert("Error",err.message);
     }finally{
@@ -38,7 +63,7 @@ export default function Login(){
     }
   };
 
-  // VERIFY OTP
+  // 🔐 VERIFY OTP
   const verifyOtp=async()=>{
     if(otp.length!==6){
       Alert.alert("Invalid OTP","Enter 6-digit OTP");
@@ -46,12 +71,24 @@ export default function Login(){
     }
     try{
       setLoading(true);
-      const res=await verifyOtpApi(phone,otp);
-
-      // 🔐 Save token later (AsyncStorage)
-      // await AsyncStorage.setItem("token",res.token);
-
+      const formattedPhone=`+91${phone}`;
+      await verifyOtpApi(formattedPhone,otp);
       router.replace("/(tabs)/candidate");
+    }catch(err:any){
+      Alert.alert("Error",err.message);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  // 🔁 RESEND OTP
+  const resendOtp=async()=>{
+    try{
+      setLoading(true);
+      const formattedPhone=`+91${phone}`;
+      await sendOtpApi(fullName.trim(),formattedPhone);
+      setTimer(60);
+      setOtp("");
     }catch(err:any){
       Alert.alert("Error",err.message);
     }finally{
@@ -71,7 +108,8 @@ export default function Login(){
             <TextInput
               placeholder="Full Name"
               value={fullName}
-              onChangeText={setFullName}
+              maxLength={32}
+              onChangeText={t=>setFullName(t.replace(/[^A-Za-z ]/g,""))}
               style={styles.input}
             />
 
@@ -80,9 +118,11 @@ export default function Login(){
               keyboardType="number-pad"
               maxLength={10}
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={t=>setPhone(t.replace(/\D/g,""))}
               style={styles.input}
             />
+
+            <Text style={styles.countryCode}>+91 will be added automatically</Text>
 
             <TouchableOpacity
               style={styles.button}
@@ -103,23 +143,27 @@ export default function Login(){
               keyboardType="number-pad"
               maxLength={6}
               value={otp}
-              onChangeText={setOtp}
+              onChangeText={t=>setOtp(t.replace(/\D/g,""))}
               style={styles.input}
             />
 
             <TouchableOpacity
               style={styles.button}
               onPress={verifyOtp}
-              disabled={loading}
+              disabled={loading || timer===0}
             >
               <Text style={styles.buttonText}>
                 {loading ? "Verifying..." : "Verify & Continue"}
               </Text>
             </TouchableOpacity>
 
-            <Text style={styles.timer}>
-              {timer>0 ? `OTP valid for ${timer}s` : "OTP expired"}
-            </Text>
+            {timer>0 ? (
+              <Text style={styles.timer}>OTP valid for {timer}s</Text>
+            ):(
+              <TouchableOpacity onPress={resendOtp}>
+                <Text style={styles.resend}>Resend OTP</Text>
+              </TouchableOpacity>
+            )}
           </>
         )}
       </View>
@@ -131,8 +175,10 @@ const styles=StyleSheet.create({
   container:{flex:1,backgroundColor:"#0A1F44",justifyContent:"center",padding:20},
   card:{backgroundColor:"#fff",borderRadius:16,padding:20,elevation:6},
   title:{fontSize:22,fontWeight:"700",color:"#0A1F44",marginBottom:20,textAlign:"center"},
-  input:{height:50,borderWidth:1,borderColor:"#e0e0e0",borderRadius:12,paddingHorizontal:15,fontSize:16,marginBottom:15,backgroundColor:"#fafafa"},
+  input:{height:50,borderWidth:1,borderColor:"#e0e0e0",borderRadius:12,paddingHorizontal:15,fontSize:16,marginBottom:12,backgroundColor:"#fafafa"},
+  countryCode:{fontSize:12,color:"#757575",marginBottom:10},
   button:{backgroundColor:"#0A1F44",height:50,borderRadius:12,justifyContent:"center",alignItems:"center"},
   buttonText:{color:"#fff",fontSize:16,fontWeight:"600"},
-  timer:{marginTop:15,textAlign:"center",color:"#757575"}
+  timer:{marginTop:15,textAlign:"center",color:"#757575"},
+  resend:{marginTop:15,textAlign:"center",color:"#0A1F44",fontWeight:"600"}
 });

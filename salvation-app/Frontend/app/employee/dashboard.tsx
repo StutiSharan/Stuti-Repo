@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getEmployeeProfile } from "../../api/employeeApi";
+import { Alert } from "react-native";
 
 export default function Dashboard(){
   const [loading,setLoading]=useState(true);
@@ -42,6 +43,24 @@ export default function Dashboard(){
 
     loadProfile();
   },[]);
+const handleLogout=async()=>{
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      { text:"Cancel", style:"cancel" },
+      {
+        text:"Logout",
+        style:"destructive",
+        onPress:async()=>{
+          await AsyncStorage.removeItem("employeeToken");
+          await AsyncStorage.removeItem("employeeId");
+          router.replace("/(tabs)/employee");
+        }
+      }
+    ]
+  );
+};
 
   if(loading){
     return(
@@ -55,11 +74,21 @@ export default function Dashboard(){
     <View style={styles.container}>
       <StatusBar style="light" backgroundColor="#0A1F44" />
 
-      {/* NAVBAR */}
-      <View style={styles.navbar}>
-        <BackButton />
-        <Text style={styles.navTitle}>Employee Dashboard</Text>
-      </View>
+    <View style={styles.navbar}>
+  <BackButton />
+
+  <Text style={styles.navTitle}>Dashboard</Text>
+
+  <TouchableOpacity
+    style={styles.logoutBtn}
+    onPress={handleLogout}
+    activeOpacity={0.8}
+  >
+    <Ionicons name="log-out-outline" size={18} color="#fff" />
+    <Text style={styles.logoutText}>Logout</Text>
+  </TouchableOpacity>
+</View>
+
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:30}}>
         {/* HEADER */}
@@ -132,6 +161,21 @@ const styles=StyleSheet.create({
     borderBottomLeftRadius:20,
     borderBottomRightRadius:20
   },
+  logoutBtn:{
+  flexDirection:"row",
+  alignItems:"center",
+  backgroundColor:"#d32f2f", 
+  paddingHorizontal:14,
+  marginLeft:73,
+  paddingVertical:8,
+  borderRadius:20
+},
+logoutText:{
+  color:"#fff",
+  fontSize:14,
+  fontWeight:"700",
+  marginLeft:6
+},
   navTitle:{fontSize:20,fontWeight:"700",color:"#fff",marginLeft:12},
   header:{padding:20},
   welcome:{fontSize:14,color:"#757575"},

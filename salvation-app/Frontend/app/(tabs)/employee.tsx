@@ -2,7 +2,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityInd
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
@@ -17,6 +17,17 @@ export default function Employee(){
   const [otp,setOtp]=useState("");
   const [loading,setLoading]=useState(false);
 
+  /* 🔐 AUTO REDIRECT IF LOGGED IN */
+  useEffect(()=>{
+    const checkAuth=async()=>{
+      const token=await AsyncStorage.getItem("employeeToken");
+      if(token){
+        router.replace("/employee/dashboard");
+      }
+    };
+    checkAuth();
+  },[]);
+
   /* ---------- SEND OTP ---------- */
   const sendOtp=async()=>{
     if(!employeeId || !mobile){
@@ -26,19 +37,13 @@ export default function Employee(){
 
     try{
       setLoading(true);
-
-      await sendEmployeeOtpApi({
-        employeeId,
-        loginMobile: mobile
-      });
-
-      setLoading(false);
+      await sendEmployeeOtpApi({ employeeId, loginMobile:mobile });
       setStep("OTP");
       Alert.alert("OTP Sent","Please check your phone");
-
     }catch(err:any){
-      setLoading(false);
       Alert.alert("Error",err.message);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -51,23 +56,21 @@ export default function Employee(){
 
     try{
       setLoading(true);
-
       const res=await verifyEmployeeOtpApi({
         employeeId,
         otp,
-         loginMobile: mobile
+        loginMobile:mobile
       });
 
-      // 🔐 Save token
       await AsyncStorage.setItem("employeeToken",res.token);
       await AsyncStorage.setItem("employeeId",res.employeeId);
 
-      setLoading(false);
       router.replace("/employee/dashboard");
 
     }catch(err:any){
-      setLoading(false);
       Alert.alert("Invalid OTP",err.message);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -75,14 +78,12 @@ export default function Employee(){
     <View style={styles.container}>
       <StatusBar style="light" backgroundColor="#0A1F44" />
 
-      {/* HEADER */}
       <View style={styles.header}>
-        <Ionicons name="briefcase" size={42} color="#ffffff" />
+        <Ionicons name="briefcase" size={42} color="#fff" />
         <Text style={styles.brand}>Employee Portal</Text>
         <Text style={styles.subtitle}>Authorized access only</Text>
       </View>
 
-      {/* CARD */}
       <View style={styles.card}>
         <Text style={styles.title}>Employee Login</Text>
 
@@ -90,32 +91,16 @@ export default function Employee(){
           <>
             <View style={styles.inputBox}>
               <Ionicons name="id-card-outline" size={20} color="#607d8b" />
-              <TextInput
-                placeholder="Employee ID"
-                value={employeeId}
-                onChangeText={setEmployeeId}
-                style={styles.input}
-              />
+              <TextInput placeholder="Employee ID" value={employeeId} onChangeText={setEmployeeId} style={styles.input}/>
             </View>
 
             <View style={styles.inputBox}>
               <Ionicons name="call-outline" size={20} color="#607d8b" />
-              <TextInput
-                placeholder="Registered Mobile Number"
-                keyboardType="number-pad"
-                maxLength={10}
-                value={mobile}
-                onChangeText={setMobile}
-                style={styles.input}
-              />
+              <TextInput placeholder="Registered Mobile Number" keyboardType="number-pad" maxLength={10} value={mobile} onChangeText={setMobile} style={styles.input}/>
             </View>
 
             <TouchableOpacity style={styles.button} onPress={sendOtp} disabled={loading}>
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Send OTP</Text>
-              )}
+              {loading?<ActivityIndicator color="#fff"/>:<Text style={styles.buttonText}>Send OTP</Text>}
             </TouchableOpacity>
           </>
         )}
@@ -124,37 +109,21 @@ export default function Employee(){
           <>
             <View style={styles.inputBox}>
               <Ionicons name="key-outline" size={20} color="#607d8b" />
-              <TextInput
-                placeholder="Enter OTP"
-                keyboardType="number-pad"
-                maxLength={6}
-                value={otp}
-                onChangeText={setOtp}
-                style={styles.input}
-              />
+              <TextInput placeholder="Enter OTP" keyboardType="number-pad" maxLength={6} value={otp} onChangeText={setOtp} style={styles.input}/>
             </View>
 
             <TouchableOpacity style={styles.button} onPress={verifyOtp} disabled={loading}>
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Verify & Login</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={()=>setStep("FORM")}>
-              <Text style={styles.resend}>Change details</Text>
+              {loading?<ActivityIndicator color="#fff"/>:<Text style={styles.buttonText}>Verify & Login</Text>}
             </TouchableOpacity>
           </>
         )}
-
-        <Text style={styles.info}>
-          Contact HR if you face login issues
-        </Text>
       </View>
     </View>
   );
 }
+
+/* styles unchanged */
+
 
 /* ---------- STYLES (UNCHANGED) ---------- */
 const styles=StyleSheet.create({

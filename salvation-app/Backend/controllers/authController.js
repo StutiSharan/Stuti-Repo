@@ -66,7 +66,7 @@ exports.verifyOtp=async(req,res)=>{
     const token=jwt.sign(
       {id:loginData._id,phone:loginData.phone},
       process.env.JWT_SECRET,
-      {expiresIn:"30d"}
+      {expiresIn:"3d"}
     );
 
     res.json({
