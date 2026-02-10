@@ -32,17 +32,157 @@ export const getEmployeeProfile = async (employeeId:string)=>{
   return json;
 };
 
-/* UPDATE PROFILE */
-export const updateEmployeeProfile = async (
+export const updateEmployeeProfileApi = async (
   employeeId:string,
-  payload:any
+  token:string,
+  data:{
+    fullName?:string;
+    fatherName?:string;
+    mobile?:string;
+    address?:string;
+    profilePhoto?:any; // image picker result
+  }
 )=>{
-  const res = await fetch(`${API_BASE_URL}/employees/profile/${employeeId}`,{
-    method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(payload)
-  });
+  const formData = new FormData();
+
+  if(data.fullName) formData.append("fullName",data.fullName);
+  if(data.fatherName) formData.append("fatherName",data.fatherName);
+  if(data.mobile) formData.append("mobile",data.mobile);
+  if(data.address) formData.append("address",data.address);
+
+  if(data.profilePhoto){
+    formData.append("profilePhoto",{
+      uri:data.profilePhoto.uri,
+      name:"profile.jpg",
+      type:"image/jpeg"
+    } as any);
+  }
+
+  const res = await fetch(
+    `${API_BASE_URL}/employees/profile/${employeeId}`,
+    {
+      method:"PUT",
+      headers:{
+        Authorization:`Bearer ${token}`
+      },
+      body:formData
+    }
+  );
+
   const json = await res.json();
   if(!res.ok) throw new Error(json.message);
   return json;
+};
+
+export const uploadEmployeeDocumentsApi = async (
+  employeeId:string,
+  token:string,
+  files:{
+    aadhaar?:any;
+    pan?:any;
+    bankPassbook?:any;
+    marksheet10?:any;
+    marksheet12?:any;
+    profilePhoto?:any;
+    graduation?:any;
+  }
+)=>{
+  const formData = new FormData();
+
+  Object.entries(files).forEach(([key,file])=>{
+    if(file){
+      formData.append(key,{
+        uri:file.uri,
+        name:file.name || `${key}.jpg`,
+        type:file.type || "application/octet-stream"
+      } as any);
+    }
+  });
+
+  const res = await fetch(
+    `${API_BASE_URL}/employees/upload/employee/${employeeId}`,
+    {
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${token}`
+      },
+      body:formData
+    }
+  );
+
+  const json = await res.json();
+  if(!res.ok) throw new Error(json.message);
+  return json;
+};
+// export const uploadAdminDocumentsApi = async (
+//   employeeId:string,
+//   token:string,
+//   files:{
+//     offerLetter?:any;
+//     appointmentLetter?:any;
+//     uanLetter?:any;
+//     esicSlip?:any;
+//     salarySlip?:any;
+//   }
+// )=>{
+//   const formData = new FormData();
+
+//   Object.entries(files).forEach(([key,file])=>{
+//     if(file){
+//       formData.append(key,{
+//         uri:file.uri,
+//         name:file.name || `${key}.pdf`,
+//         type:file.type || "application/pdf"
+//       } as any);
+//     }
+//   });
+
+//   const res = await fetch(
+//     `${API_BASE_URL}/employees/upload/admin/${employeeId}`,
+//     {
+//       method:"POST",
+//       headers:{
+//         Authorization:`Bearer ${token}`
+//       },
+//       body:formData
+//     }
+//   );
+
+//   const json = await res.json();
+//   if(!res.ok) throw new Error(json.message);
+//   return json;
+// };
+export const getEmployeeDocumentsApi = async(
+  employeeId:string,
+  token:string
+)=>{
+  const res = await fetch(
+    `${API_BASE_URL}/employees/documents/${employeeId}`,
+    {
+      headers:{ Authorization:`Bearer ${token}` }
+    }
+  );
+
+  const json = await res.json();
+  if(!res.ok) throw new Error(json.message);
+  return json.documents;
+};
+/* GET PROFILE PHOTO */
+export const getEmployeeProfilePhotoApi = async (
+  employeeId: string,
+  token: string
+) => {
+  const res = await fetch(
+    `${API_BASE_URL}/employees/profile-photo/${employeeId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message);
+  return json; 
+  // { success:true, profilePhoto: string | null }
 };

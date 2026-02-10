@@ -1,193 +1,262 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  Modal
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
 import BackButton from "../../components/BackButton";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getEmployeeProfile } from "../../api/employeeApi";
-import { Alert } from "react-native";
+
+/* IMAGES */
+import salarySlip from "../../assets/images/salarySlip.png";
+import esic from "../../assets/images/ESIC.png";
+import offerLetter from "../../assets/images/OfferLetter.png";
+import uan from "../../assets/images/UAN.png";
+import upload from "../../assets/images/Upload.png";
+import defaultProfile from "../../assets/images/Myprofile.png";
 
 export default function Dashboard(){
   const [loading,setLoading]=useState(true);
-  const [employeeId,setEmployeeId]=useState("XXXX");
+  const [employeeId,setEmployeeId]=useState<string | null>(null);
   const [employeeName,setEmployeeName]=useState("Employee Name");
+  const [profileImage,setProfileImage]=useState<string | null>(null);
+  const [menuOpen,setMenuOpen]=useState(false);
 
-  /* ---------- LOAD PROFILE ---------- */
   useEffect(()=>{
     const loadProfile=async()=>{
       try{
-        const storedEmpId=await AsyncStorage.getItem("employeeId");
-
-        if(!storedEmpId){
-          setLoading(false);
+        const id=await AsyncStorage.getItem("employeeId");
+        if(!id){
+          Alert.alert("Error","Employee ID missing");
           return;
         }
+        setEmployeeId(id);
 
-        setEmployeeId(storedEmpId);
-
-        const res=await getEmployeeProfile(storedEmpId);
-
+        const res=await getEmployeeProfile(id);
         if(res?.employee){
-          setEmployeeName(
-            res.employee.fullName?.trim() || "Employee Name"
-          );
+          setEmployeeName(res.employee.fullName || "Employee Name");
+          setProfileImage(res.employee.profileImage || null); // 👈 future DB image
         }
-
-      }catch(err){
-        console.log("⚠️ Dashboard profile fetch failed");
+      }catch{
+        Alert.alert("Error","Failed to load profile");
       }finally{
         setLoading(false);
       }
     };
-
     loadProfile();
   },[]);
-const handleLogout=async()=>{
-  Alert.alert(
-    "Logout",
-    "Are you sure you want to logout?",
-    [
-      { text:"Cancel", style:"cancel" },
+
+  const handleLogout=()=>{
+    setMenuOpen(false);
+    Alert.alert("Logout","Are you sure you want to logout?",[
+      {text:"Cancel",style:"cancel"},
       {
         text:"Logout",
         style:"destructive",
         onPress:async()=>{
-          await AsyncStorage.removeItem("employeeToken");
-          await AsyncStorage.removeItem("employeeId");
+          await AsyncStorage.clear();
           router.replace("/(tabs)/employee");
         }
       }
-    ]
-  );
-};
+    ]);
+  };
 
-  if(loading){
+  const goToProfile=()=>{
+    setMenuOpen(false);
+    router.push({ pathname:"/employee/profile", params:{ employeeId } });
+  };
+
+  const handleCheckIn=()=>{
+    Alert.alert(
+      "Check In",
+      "Employee location will be saved.\n(We will implement this later)"
+    );
+  };
+
+  if(loading || !employeeId){
     return(
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#0A1F44"/>
+        <ActivityIndicator size="large" color="#1E3C72"/>
       </View>
     );
   }
 
   return(
     <View style={styles.container}>
-      <StatusBar style="light" backgroundColor="#0A1F44" />
+      <StatusBar style="light"/>
 
-    <View style={styles.navbar}>
-  <BackButton />
-
-  <Text style={styles.navTitle}>Dashboard</Text>
-
-  <TouchableOpacity
-    style={styles.logoutBtn}
-    onPress={handleLogout}
-    activeOpacity={0.8}
-  >
-    <Ionicons name="log-out-outline" size={18} color="#fff" />
-    <Text style={styles.logoutText}>Logout</Text>
-  </TouchableOpacity>
-</View>
-
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:30}}>
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.welcome}>Welcome</Text>
-          <Text style={styles.name}>{employeeName}</Text>
-          <Text style={styles.empId}>Employee ID: {employeeId}</Text>
-        </View>
-
-        {/* STATS */}
-        <View style={styles.statsRow}>
-          <TouchableOpacity style={styles.statCard} onPress={()=>router.push("/employee/my-documents")}>
-            <Ionicons name="document-text-outline" size={28} color="#0A1F44" />
-            <Text style={styles.statTitle}>Salary Slips</Text>
-            <Text style={styles.statSub}>View & Download</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.statCard} onPress={()=>router.push("/employee/my-documents")}>
-            <Ionicons name="folder-open-outline" size={28} color="#0A1F44" />
-            <Text style={styles.statTitle}>Documents</Text>
-            <Text style={styles.statSub}>My Files</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* PROFILE CARD */}
-        <View style={styles.profileCard}>
-          <MaterialIcons name="account-circle" size={48} color="#0A1F44" />
-          <View style={{marginLeft:12}}>
-            <Text style={styles.profileName}>{employeeName}</Text>
-            <Text style={styles.profileRole}>Employee</Text>
+      {/* HEADER */}
+      <LinearGradient colors={["#1E3C72","#2A5298"]} style={styles.header}>
+        <View style={styles.topRow}>
+          <View style={{flexDirection:"row",alignItems:"center"}}>
+            <BackButton />
+            <Text style={styles.dashboardTitle}>Dashboard</Text>
           </View>
+
+          <TouchableOpacity onPress={()=>setMenuOpen(true)}>
+            <Ionicons name="menu-outline" size={28} color="#fff"/>
+          </TouchableOpacity>
         </View>
 
-        {/* ACTIONS */}
-        <TouchableOpacity style={styles.actionCard} onPress={()=>router.push("/employee/profile")}>
-          <Ionicons name="person-outline" size={24} color="#fff" />
-          <Text style={styles.actionText}>Profile Details</Text>
-        </TouchableOpacity>
+        {/* PROFILE ROW */}
+        <View style={styles.profileRow}>
+          <Image
+            source={profileImage ? {uri:profileImage} : defaultProfile}
+            style={styles.profileImage}
+          />
 
-        <TouchableOpacity style={styles.actionCard} onPress={()=>router.push("/employee/upload-documents")}>
-          <Ionicons name="cloud-upload-outline" size={24} color="#fff" />
-          <Text style={styles.actionText}>Upload Documents</Text>
-        </TouchableOpacity>
+          <View style={{flex:1,marginLeft:12}}>
+            <Text style={styles.name}>{employeeName}</Text>
+            <Text style={styles.empId}>ID: {employeeId}</Text>
+          </View>
 
-        <TouchableOpacity style={styles.actionCard} onPress={()=>router.push("/employee/my-documents")}>
-          <Ionicons name="document-attach-outline" size={24} color="#fff" />
-          <Text style={styles.actionText}>My Documents</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.checkInBtn} onPress={handleCheckIn}>
+            <Ionicons name="location-outline" size={16} color="#fff"/>
+            <Text style={styles.checkInText}>Check In</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+
+      {/* CARDS */}
+      <ScrollView contentContainerStyle={styles.cardWrap}>
+        <Card image={salarySlip} title="Salary Slip" onPress={()=>router.push({pathname:"/employee/upload-documents",params:{employeeId}})} />
+        <Card image={esic} title="ESIC Slip" onPress={()=>router.push({pathname:"/employee/my-documents",params:{employeeId}})} />
+        <Card image={offerLetter} title="Offer Letter" onPress={()=>router.push({pathname:"/employee/my-documents",params:{employeeId}})} />
+        <Card image={uan} title="UAN Document" onPress={()=>router.push({pathname:"/employee/my-documents",params:{employeeId}})} />
+        <Card image={upload} title="Upload Docs" onPress={()=>router.push({pathname:"/employee/upload-documents",params:{employeeId}})} />
+        <Card image={defaultProfile} title="My Profile" onPress={goToProfile} />
       </ScrollView>
+
+      {/* HAMBURGER MENU – BOTTOM SHEET */}
+      <Modal transparent visible={menuOpen} animationType="slide">
+        <Pressable style={styles.overlay} onPress={()=>setMenuOpen(false)}>
+          <View style={styles.sheet}>
+            <Image
+              source={profileImage ? {uri:profileImage} : defaultProfile}
+              style={styles.sheetProfile}
+            />
+            <Text style={styles.sheetName}>{employeeName}</Text>
+            <Text style={styles.sheetId}>{employeeId}</Text>
+
+            <TouchableOpacity style={styles.sheetItem} onPress={goToProfile}>
+              <Ionicons name="person-outline" size={20} color="#1E3C72"/>
+              <Text style={styles.sheetText}>My Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.sheetItem} onPress={handleLogout}>
+              <Ionicons name="log-out-outline" size={20} color="#d32f2f"/>
+              <Text style={[styles.sheetText,{color:"#d32f2f"}]}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
 
-/* ---------- STYLES ---------- */
+const Card=({image,title,onPress}:any)=>(
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
+    <View style={styles.circle}>
+      <Image
+        source={image}
+        style={styles.circleImage}
+        resizeMode="cover"
+      />
+    </View>
+    <Text style={styles.cardText}>{title}</Text>
+  </TouchableOpacity>
+);
+
+/* STYLES */
 const styles=StyleSheet.create({
-  loader:{
-    flex:1,
-    justifyContent:"center",
-    alignItems:"center",
-    backgroundColor:"#f4f6f8"
-  },
-  container:{flex:1,backgroundColor:"#f4f6f8"},
-  navbar:{
-    flexDirection:"row",
-    alignItems:"center",
-    paddingTop:48,
-    paddingBottom:14,
-    paddingHorizontal:20,
-    backgroundColor:"#0A1F44",
-    borderBottomLeftRadius:20,
-    borderBottomRightRadius:20
-  },
-  logoutBtn:{
+  loader:{flex:1,justifyContent:"center",alignItems:"center"},
+  container:{flex:1,backgroundColor:"#F4F6FA"},
+  header:{paddingTop:55,paddingBottom:30,paddingHorizontal:20,borderBottomLeftRadius:26,borderBottomRightRadius:26},
+  topRow:{flexDirection:"row",justifyContent:"space-between",alignItems:"center"},
+  dashboardTitle:{color:"#fff",fontSize:18,fontWeight:"700",marginLeft:8},
+  profileRow:{flexDirection:"row",alignItems:"center",marginTop:20},
+  profileImage:{width:56,height:56,borderRadius:28,backgroundColor:"#fff"},
+  name:{color:"#fff",fontSize:18,fontWeight:"700"},
+  empId:{color:"#D6E0FF",fontSize:13},
+  checkInBtn:{flexDirection:"row",alignItems:"center",backgroundColor:"#4CAF50",paddingHorizontal:14,paddingVertical:8,borderRadius:20},
+  checkInText:{color:"#fff",fontSize:12,fontWeight:"700",marginLeft:6},
+  cardWrap:{
   flexDirection:"row",
+  flexWrap:"wrap",
+  justifyContent:"space-between",
+  padding:20
+},
+
+/* CARD NOW LOOKS LIKE ICONBOX */
+card:{
+  width:"48%",
+  backgroundColor:"#EEF3FF",
+  borderRadius:20,
+  paddingVertical:26,
   alignItems:"center",
-  backgroundColor:"#d32f2f", 
-  paddingHorizontal:14,
-  marginLeft:73,
-  paddingVertical:8,
-  borderRadius:20
+  marginBottom:18,
+  elevation:4
 },
-logoutText:{
-  color:"#fff",
+
+/* PERFECT CIRCLE */
+circle:{
+  width:96,              // 👈 bigger
+  height:96,
+  borderRadius:48,
+  backgroundColor:"#fff",
+  justifyContent:"center",
+  alignItems:"center",
+  overflow:"hidden"      // 👈 IMPORTANT for circle crop
+},
+
+/* IMAGE FITS CIRCLE */
+circleImage:{
+  width:"100%",
+  height:"100%"
+},
+
+cardText:{
+  marginTop:14,
   fontSize:14,
-  fontWeight:"700",
-  marginLeft:6
+  fontWeight:"600",
+  color:"#1E3C72",
+  textAlign:"center"
 },
-  navTitle:{fontSize:20,fontWeight:"700",color:"#fff",marginLeft:12},
-  header:{padding:20},
-  welcome:{fontSize:14,color:"#757575"},
-  name:{fontSize:24,fontWeight:"700",color:"#0A1F44"},
-  empId:{fontSize:13,color:"#607d8b",marginTop:4},
-  statsRow:{flexDirection:"row",justifyContent:"space-between",marginHorizontal:20},
-  statCard:{width:"48%",backgroundColor:"#fff",borderRadius:16,padding:16,alignItems:"center",elevation:4},
-  statTitle:{fontSize:16,fontWeight:"600",marginTop:8},
-  statSub:{fontSize:12,color:"#757575"},
-  profileCard:{flexDirection:"row",alignItems:"center",backgroundColor:"#fff",margin:20,borderRadius:16,padding:16,elevation:4},
-  profileName:{fontSize:16,fontWeight:"600"},
-  profileRole:{fontSize:13,color:"#757575"},
-  actionCard:{flexDirection:"row",alignItems:"center",backgroundColor:"#0A1F44",marginHorizontal:20,marginTop:15,borderRadius:14,padding:16},
-  actionText:{color:"#fff",fontSize:15,fontWeight:"600",marginLeft:12}
+
+cardIconWrapper:{
+  width:74,
+  height:74,
+  borderRadius:37,
+  backgroundColor:"#fff",     // 👈 image sits on white circle
+  justifyContent:"center",
+  alignItems:"center"
+},
+
+iconImg:{
+  width:100,
+  height:50
+},
+
+ iconBox:{width:74,height:74,borderRadius:32,backgroundColor:"#EEF3FF",justifyContent:"center",alignItems:"center"},
+
+  overlay:{flex:1,justifyContent:"flex-end",backgroundColor:"rgba(0,0,0,0.4)"},
+  sheet:{backgroundColor:"#fff",padding:20,borderTopLeftRadius:20,borderTopRightRadius:20},
+  sheetProfile:{width:70,height:70,borderRadius:35,alignSelf:"center"},
+  sheetName:{fontSize:18,fontWeight:"700",textAlign:"center",marginTop:10},
+  sheetId:{fontSize:13,color:"#777",textAlign:"center",marginBottom:20},
+  sheetItem:{flexDirection:"row",alignItems:"center",paddingVertical:14},
+  sheetText:{marginLeft:12,fontSize:16,fontWeight:"600",color:"#1E3C72"}
 });
+

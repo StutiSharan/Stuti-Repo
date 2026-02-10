@@ -1,317 +1,360 @@
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
-  ActivityIndicator
+  Image,
+  ActivityIndicator,
+  TextInput,
 } from "react-native";
-import BackButton from "../../components/BackButton";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect,useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import * as ImagePicker from "expo-image-picker";
+import BackButton from "../../components/BackButton";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getEmployeeProfile,
-  updateEmployeeProfile
+  updateEmployeeProfileApi,
+  getEmployeeProfilePhotoApi,
 } from "../../api/employeeApi";
 
-/* ================= PROFILE SCREEN ================= */
-export default function Profile(){
-  const [employeeId,setEmployeeId]=useState("");
+export default function Profile() {
+  const [employeeId, setEmployeeId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [fullName,setFullName]=useState("");
-  const [fatherName,setFatherName]=useState("");
-  const [mobile,setMobile]=useState("");
-  const [address,setAddress]=useState("");
+  const [mode, setMode] = useState<"VIEW" | "EDIT">("EDIT");
 
-  const [loading,setLoading]=useState(true);
-  const [saving,setSaving]=useState(false);
+  const [profileImage, setProfileImage] = useState<any>(null);
+  const [imageLoading, setImageLoading] = useState(false);
 
-  // VIEW → show card, EDIT → show form
-  const [mode,setMode]=useState<"VIEW"|"EDIT">("VIEW");
+  const [fullName, setFullName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [address, setAddress] = useState("");
+  const [email, setEmail] = useState("");
 
-  /* ---------- LOAD PROFILE ---------- */
-  useEffect(()=>{
-    const loadProfile=async()=>{
-      try{
-        const empId=await AsyncStorage.getItem("employeeId");
-        if(!empId){
-          Alert.alert("Session expired","Please login again");
-          return;
-        }
+  /* ================= LOAD PROFILE ================= */
+  useEffect(() => {
+    (async () => {
+      try {
+        const empId = await AsyncStorage.getItem("employeeId");
+        const token = await AsyncStorage.getItem("employeeToken");
+        if (!empId || !token) return;
 
         setEmployeeId(empId);
 
-        const res=await getEmployeeProfile(empId);
-        const emp=res.employee;
-
-        const hasProfile =
-          emp.fullName || emp.fatherName || emp.mobile || emp.address;
+        const res = await getEmployeeProfile(empId);
+        const emp = res.employee;
 
         setFullName(emp.fullName || "");
-        setFatherName(emp.fatherName || "");
         setMobile(emp.mobile || "");
         setAddress(emp.address || "");
+        setEmail(emp.loginMobile || "");
 
-        setMode(hasProfile ? "VIEW" : "EDIT");
+        const hasData = emp.fullName || emp.mobile || emp.address;
+        setMode(hasData ? "VIEW" : "EDIT");
 
-      }catch(err){
-        Alert.alert("Error","Failed to load profile");
-      }finally{
+        const photoRes = await getEmployeeProfilePhotoApi(empId, token);
+        if (photoRes.profilePhoto) {
+          setImageLoading(true);
+          setProfileImage({
+            uri: `${photoRes.profilePhoto}?t=${Date.now()}`,
+          });
+        }
+      } catch {
+        Alert.alert("Error", "Failed to load profile");
+      } finally {
         setLoading(false);
       }
-    };
+    })();
+  }, []);
 
-    loadProfile();
-  },[]);
-
-  /* ---------- SAVE PROFILE ---------- */
-  const saveProfile=async()=>{
-    if(!fullName||!fatherName||!mobile||!address){
-      Alert.alert("Required","Please fill all fields");
+  /* ================= PICK IMAGE ================= */
+  const pickImage = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Permission required");
       return;
     }
 
-    try{
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+    });
+
+    if (!res.canceled) {
+      setImageLoading(false); // local image loads instantly
+      setProfileImage(res.assets[0]);
+    }
+  };
+
+  /* ================= SAVE PROFILE ================= */
+  const saveProfile = async () => {
+    if (!fullName || !mobile || !address) {
+      Alert.alert("Required", "Please fill all fields");
+      return;
+    }
+
+    try {
       setSaving(true);
 
-      await updateEmployeeProfile(employeeId,{
-        fullName,
-        fatherName,
-        mobile,
-        address
-      });
+      await updateEmployeeProfileApi(
+        employeeId,
+        (await AsyncStorage.getItem("employeeToken")) || "",
+        {
+          fullName,
+          mobile,
+          address,
+          profilePhoto: profileImage?.uri?.startsWith("file://")
+            ? profileImage
+            : undefined,
+        },
+      );
 
-      Alert.alert("Success","Profile saved successfully");
+      Alert.alert("Success", "Profile updated");
       setMode("VIEW");
-
-    }catch(err:any){
-      Alert.alert("Error",err.message||"Update failed");
-    }finally{
+    } catch {
+      Alert.alert("Error", "Update failed");
+    } finally {
       setSaving(false);
     }
   };
 
-  /* ---------- LOADER ---------- */
-  if(loading){
-    return(
+  if (loading) {
+    return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#0A1F44"/>
+        <ActivityIndicator size="large" color="#1E3C72" />
       </View>
     );
   }
 
-  return(
+  return (
     <View style={styles.container}>
-      <StatusBar style="light" backgroundColor="#0A1F44"/>
+      <StatusBar style="light" />
 
-      {/* NAVBAR */}
-      <View style={styles.navbar}>
-        <BackButton/>
-        <Text style={styles.navTitle}>Profile Details</Text>
-      </View>
+      {/* HEADER */}
+      <LinearGradient colors={["#1E3C72", "#2A5298"]} style={styles.header}>
+        <View style={styles.navbar}>
+          <BackButton />
+          <Text style={styles.navTitle}>My Profile</Text>
+        </View>
+      </LinearGradient>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* AVATAR */}
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatarWrapper}>
-            <Ionicons name="person" size={46} color="#607d8b"/>
-          </View>
-          <Text style={styles.avatarText}>Profile Photo (Coming Soon)</Text>
+        <View style={styles.avatarSection}>
+          {mode === "EDIT" ? (
+            <TouchableOpacity onPress={pickImage} activeOpacity={0.85}>
+              <View style={styles.avatarOuter}>
+                <View style={styles.avatarWrapper}>
+                  {imageLoading && (
+                    <ActivityIndicator
+                      size="small"
+                      color="#1E3C72"
+                      style={styles.avatarLoader}
+                    />
+                  )}
+
+                  <Image
+                    source={
+                      profileImage
+                        ? { uri: profileImage.uri }
+                        : require("../../assets/images/Myprofile.png")
+                    }
+                    style={[styles.avatar, imageLoading && { opacity: 0 }]}
+                    resizeMode="cover"
+                    onLoadEnd={() => setImageLoading(false)}
+                  />
+                </View>
+
+                <View style={styles.cameraBadge}>
+                  <Ionicons name="camera" size={16} color="#fff" />
+                </View>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.avatarWrapper}>
+              {imageLoading && (
+                <ActivityIndicator
+                  size="small"
+                  color="#1E3C72"
+                  style={styles.avatarLoader}
+                />
+              )}
+
+              <Image
+                source={
+                  profileImage
+                    ? { uri: profileImage.uri }
+                    : require("../../assets/images/Myprofile.png")
+                }
+                style={[styles.avatar, imageLoading && { opacity: 0 }]}
+                resizeMode="cover"
+                onLoadEnd={() => setImageLoading(false)}
+              />
+            </View>
+          )}
+
+          <Text style={styles.name}>{fullName || "Employee Name"}</Text>
         </View>
 
-        {/* ================= VIEW MODE ================= */}
-        {mode==="VIEW" && (
-          <View style={styles.profileCard}>
-
-            {/* CARD HEADER */}
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Profile Information</Text>
-              <TouchableOpacity onPress={()=>setMode("EDIT")}>
-                <Ionicons name="create-outline" size={22} color="#0A1F44"/>
-              </TouchableOpacity>
-            </View>
-
-            <InfoRow label="Full Name" value={fullName}/>
-            <Divider/>
-            <InfoRow label="Father's Name" value={fatherName}/>
-            <Divider/>
-            <InfoRow label="Mobile Number" value={mobile}/>
-            <Divider/>
-            <InfoRow label="Address" value={address} multiline/>
+        {/* VIEW MODE */}
+        {mode === "VIEW" && (
+          <View style={styles.card}>
+            <InfoRow icon="person-outline" value={fullName} />
+            <InfoRow icon="call-outline" value={mobile} />
+            <InfoRow icon="mail-outline" value={email} />
+            <InfoRow icon="location-outline" value={address} />
 
             <TouchableOpacity
               style={styles.editBtn}
-              onPress={()=>setMode("EDIT")}
+              onPress={() => setMode("EDIT")}
             >
-              <Ionicons name="create-outline" size={18} color="#fff"/>
               <Text style={styles.editText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* ================= EDIT MODE ================= */}
-        {mode==="EDIT" && (
-          <>
-            <View style={styles.formCard}>
-              <TextInput
-                value={fullName}
-                onChangeText={setFullName}
-                placeholder="Full Name"
-                style={styles.input}
-              />
-              <TextInput
-                value={fatherName}
-                onChangeText={setFatherName}
-                placeholder="Father's Name"
-                style={styles.input}
-              />
-              <TextInput
-                value={mobile}
-                onChangeText={setMobile}
-                placeholder="Mobile Number"
-                keyboardType="number-pad"
-                style={styles.input}
-              />
-              <TextInput
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Address"
-                multiline
-                style={[styles.input,{height:90}]}
-              />
-            </View>
+        {/* EDIT MODE */}
+        {mode === "EDIT" && (
+          <View style={styles.card}>
+            <TextInput
+              placeholder="Full Name"
+              value={fullName}
+              onChangeText={setFullName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Mobile"
+              value={mobile}
+              onChangeText={setMobile}
+              keyboardType="number-pad"
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Address"
+              value={address}
+              onChangeText={setAddress}
+              multiline
+              style={[styles.input, { height: 80 }]}
+            />
 
             <TouchableOpacity
-              style={styles.saveBtn}
+              style={styles.editBtn}
               onPress={saveProfile}
               disabled={saving}
             >
-              <Text style={styles.saveText}>
-                {saving?"Saving...":"Save Profile"}
+              <Text style={styles.editText}>
+                {saving ? "Saving..." : "Save Profile"}
               </Text>
             </TouchableOpacity>
-          </>
+          </View>
         )}
-
       </ScrollView>
     </View>
   );
 }
 
-/* ================= SMALL COMPONENTS ================= */
-const InfoRow=({
-  label,value,multiline=false
-}:{label:string;value:string;multiline?:boolean})=>(
+/* ================= SMALL COMPONENT ================= */
+
+const InfoRow = ({ icon, value }: { icon: any; value: string }) => (
   <View style={styles.infoRow}>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text
-      style={[
-        styles.infoValue,
-        multiline && {lineHeight:20}
-      ]}
-    >
-      {value || "-"}
-    </Text>
+    <Ionicons name={icon} size={18} color="#1E3C72" />
+    <Text style={styles.infoText}>{value || "-"}</Text>
   </View>
 );
 
-const Divider=()=>(
-  <View style={styles.divider}/>
-);
-
 /* ================= STYLES ================= */
-const styles=StyleSheet.create({
-  container:{flex:1,backgroundColor:"#f4f6f8"},
-  loader:{flex:1,justifyContent:"center",alignItems:"center"},
 
-  navbar:{
-    flexDirection:"row",
-    alignItems:"center",
-    paddingTop:48,
-    paddingBottom:14,
-    paddingHorizontal:20,
-    backgroundColor:"#0A1F44",
-    borderBottomLeftRadius:20,
-    borderBottomRightRadius:20
-  },
-  navTitle:{fontSize:20,fontWeight:"700",color:"#fff",marginLeft:12},
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#F4F6FA" },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
 
-  avatarContainer:{alignItems:"center",marginTop:20},
-  avatarWrapper:{
-    width:110,
-    height:110,
-    borderRadius:55,
-    backgroundColor:"#e3f2fd",
-    justifyContent:"center",
-    alignItems:"center",
-    elevation:4
-  },
-  avatarText:{marginTop:8,fontSize:13,color:"#757575"},
-
-  profileCard:{
-    backgroundColor:"#fff",
-    margin:20,
-    borderRadius:18,
-    padding:18,
-    elevation:5
-  },
-  cardHeader:{
-    flexDirection:"row",
-    justifyContent:"space-between",
-    alignItems:"center",
-    marginBottom:16
-  },
-  cardTitle:{
-    fontSize:17,
-    fontWeight:"700",
-    color:"#0A1F44"
+  header: {
+    height: 150,
+    paddingTop: 48,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
   },
 
-  infoRow:{paddingVertical:10},
-  infoLabel:{fontSize:13,color:"#78909c"},
-  infoValue:{fontSize:15,fontWeight:"600",color:"#263238",marginTop:4},
-  divider:{height:1,backgroundColor:"#eceff1"},
+  navbar: { flexDirection: "row", alignItems: "center" },
+  navTitle: { color: "#fff", fontSize: 18, fontWeight: "700", marginLeft: 8 },
 
-  editBtn:{
-    marginTop:20,
-    backgroundColor:"#0A1F44",
-    height:48,
-    borderRadius:12,
-    flexDirection:"row",
-    justifyContent:"center",
-    alignItems:"center"
-  },
-  editText:{color:"#fff",fontSize:15,fontWeight:"600",marginLeft:8},
+  avatarSection: { alignItems: "center", marginTop: 20 },
+  name: { fontSize: 18, fontWeight: "700", marginTop: 10 },
 
-  formCard:{
-    backgroundColor:"#fff",
-    margin:20,
-    borderRadius:18,
-    padding:16,
-    elevation:5
-  },
-  input:{
-    borderWidth:1,
-    borderColor:"#e0e0e0",
-    borderRadius:12,
-    padding:12,
-    marginBottom:12,
-    backgroundColor:"#fafafa"
+  avatarOuter: {
+    width: 120,
+    height: 120,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
-  saveBtn:{
-    backgroundColor:"#0A1F44",
-    height:52,
-    marginHorizontal:20,
-    borderRadius:14,
-    justifyContent:"center",
-    alignItems:"center",
-    marginBottom:30
+  avatarWrapper: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    elevation: 6,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  saveText:{color:"#fff",fontSize:16,fontWeight:"600"}
+
+  avatar: { width: "100%", height: "100%", borderRadius: 55 },
+
+  avatarLoader: { position: "absolute", zIndex: 10 },
+
+  cameraBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#1E3C72",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    margin: 20,
+    borderRadius: 18,
+    padding: 18,
+    elevation: 4,
+  },
+
+  infoRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
+  infoText: {
+    marginLeft: 12,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#263238",
+  },
+
+  editBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E3C72",
+    height: 46,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  editText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: "#fafafa",
+  },
 });

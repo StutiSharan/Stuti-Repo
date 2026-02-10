@@ -1,13 +1,12 @@
 const Candidate = require("../models/Candidate");
-const { uploadToDrive } = require("../utills/driveUpload");
-const path = require("path");
+const { uploadToS3 } = require("../utills/uploadToS3");
 const mongoose = require("mongoose");
 
-/* ================== COUNTER (INLINE) ================== */
 const CounterSchema = new mongoose.Schema({
   name:{type:String,unique:true},
   seq:{type:Number,default:0}
 });
+
 const Counter =
   mongoose.models.Counter ||
   mongoose.model("Counter",CounterSchema);
@@ -19,51 +18,47 @@ exports.createCandidate = async(req,res)=>{
 
     const { fullName,fatherName,address,mobile } = req.body;
 
-    /* ---------- SEQUENTIAL CANDIDATE ID (ONLY CHANGE) ---------- */
+    /* ---------- SEQUENTIAL CANDIDATE ID ---------- */
     const counter = await Counter.findOneAndUpdate(
-      {name:"candidate"},
-      {$inc:{seq:1}},
-      {new:true,upsert:true}
+      { name:"candidate" },
+      { $inc:{ seq:1 } },
+      { new:true, upsert:true }
     );
 
     const candidateId = `CAND-${counter.seq
       .toString()
       .padStart(4,"0")}`;
 
-    console.log("🆔 Generated Candidate ID:",candidateId);
-
-    /* ---------- REST CODE UNCHANGED ---------- */
     let resumeFilePath="";
     let aadhaarFilePath="";
 
+    /* ---------- UPLOAD RESUME TO S3 ---------- */
     if(req.files?.resume?.[0]){
-      const ext = path.extname(req.files.resume[0].originalname);
-      const name =
-        `${fullName.replace(/\s+/g,"_")}_${candidateId}_Resume${ext}`;
-
-      await uploadToDrive(
+      resumeFilePath = await uploadToS3(
         req.files.resume[0],
-        process.env.GOOGLE_DRIVE_RESUME_FOLDER_ID,
-        name
+        {
+          module:"candidate",
+          documentType:"resume",
+          name:fullName,
+          id:candidateId
+        }
       );
-
-      resumeFilePath = `uploads/newCandidate/resume/${name}`;
     }
 
+    /* ---------- UPLOAD AADHAAR TO S3 ---------- */
     if(req.files?.aadhaar?.[0]){
-      const ext = path.extname(req.files.aadhaar[0].originalname);
-      const name =
-        `${fullName.replace(/\s+/g,"_")}_${candidateId}_Aadhaar${ext}`;
-
-      await uploadToDrive(
+      aadhaarFilePath = await uploadToS3(
         req.files.aadhaar[0],
-        process.env.GOOGLE_DRIVE_AADHAR_FOLDER_ID,
-        name
+        {
+          module:"candidate",
+          documentType:"aadhaar",
+          name:fullName,
+          id:candidateId
+        }
       );
-
-      aadhaarFilePath = `uploads/newCandidate/aadhaar/${name}`;
     }
 
+    /* ---------- SAVE CANDIDATE ---------- */
     const candidate = await Candidate.create({
       candidateId,
       fullName,
@@ -76,18 +71,19 @@ exports.createCandidate = async(req,res)=>{
 
     console.log("🎉 Candidate saved");
 
-    res.status(201).json({success:true,candidate});
+    res.status(201).json({ success:true, candidate });
 
   }catch(err){
     console.error("🔥 Error:",err);
-    res.status(500).json({message:"Server error"});
+    res.status(500).json({ message:"Server error" });
   }
 };
+
 exports.getCandidateByMobile = async(req,res)=>{
   try{
     let mobile = req.params.mobile;
 
-    // ✅ normalize to 10 digits
+    // normalize to 10 digits
     if(mobile.startsWith("+91")){
       mobile = mobile.slice(3);
     }
@@ -104,4 +100,3 @@ exports.getCandidateByMobile = async(req,res)=>{
     res.status(500).json({ message:"Server error" });
   }
 };
-
