@@ -1,88 +1,75 @@
 const express = require("express");
-const upload = require("../middleware/upload");
+const baseUpload = require("../middleware/upload");
 
 const {
-	sendOtp,
-	verifyOtp,
-	getEmployeeProfile,
-	updateEmployeeProfile,
-	uploadEmployeeDocuments,
-	uploadAdminDocuments,
+  sendOtp,
+  verifyOtp,
+  getEmployeeProfile,
+  updateEmployeeProfile,
+  uploadEmployeeDocuments,
+  uploadAdminDocuments,
   getEmployeeDocuments,
   getEmployeeProfilePhoto,
 } = require("../controllers/employeeController");
 
 const router = express.Router();
 
+/* ================= MULTER INSTANCES ================= */
+
+// 🔹 profile photo only
+const profileUpload = baseUpload.fields([
+  { name: "profilePhoto", maxCount: 1 }
+]);
+
+// 🔹 employee documents only
+const employeeDocsUpload = baseUpload.fields([
+  { name:"aadhaar", maxCount:1 },
+  { name:"pan", maxCount:1 },
+  { name:"bankPassbook", maxCount:1 },
+  { name:"marksheet12", maxCount:1 },
+  { name:"graduation", maxCount:1 }
+]);
+
+// 🔹 admin documents
+const adminDocsUpload = baseUpload.fields([
+  { name:"offerLetter", maxCount:1 },
+  { name:"appointmentLetter", maxCount:1 },
+  { name:"uanLetter", maxCount:1 },
+  { name:"esicSlip", maxCount:1 },
+  { name:"salarySlip", maxCount:1 }
+]);
+
 /* ================= AUTH ================= */
 router.post("/send-otp", sendOtp);
 router.post("/verify-otp", verifyOtp);
 
 /* ================= PROFILE ================= */
-// GET profile
 router.get("/profile/:employeeId", getEmployeeProfile);
-router.get(
-  "/documents/:employeeId",
-  getEmployeeDocuments
-);
+router.get("/documents/:employeeId", getEmployeeDocuments);
 
-
-// UPDATE profile + profile photo
 router.put(
-	"/profile/:employeeId",
-	upload.fields([
-		{ name:"profilePhoto", maxCount:1 }
-	]),
-	updateEmployeeProfile
+  "/profile/:employeeId",
+  profileUpload,
+  updateEmployeeProfile
 );
 
-/* ================= EMPLOYEE SELF UPLOAD ================= */
-/*
-Employee can upload:
-aadhaar
-pan
-bankPassbook
-marksheet10
-marksheet12
-profilePhoto
-graduation
-*/
+/* ================= EMPLOYEE UPLOAD ================= */
 router.post(
-	"/upload/employee/:employeeId",
-	upload.fields([
-		{ name:"aadhaar", maxCount:1 },
-		{ name:"pan", maxCount:1 },
-		{ name:"bankPassbook", maxCount:1 },
-		{ name:"marksheet10", maxCount:1 },
-		{ name:"marksheet12", maxCount:1 },
-		{ name:"profilePhoto", maxCount:1 },
-		{ name:"graduation", maxCount:1 }
-	]),
-	uploadEmployeeDocuments
+  "/upload/employee/:employeeId",
+  employeeDocsUpload,
+  uploadEmployeeDocuments
 );
 
 /* ================= ADMIN UPLOAD ================= */
-/*
-Admin can upload:
-offerLetter
-appointmentLetter
-uanLetter
-esicSlip
-salarySlip (multiple times)
-*/
 router.post(
-	"/upload/admin/:employeeId",
-	upload.fields([
-		{ name:"offerLetter", maxCount:1 },
-		{ name:"appointmentLetter", maxCount:1 },
-		{ name:"uanLetter", maxCount:1 },
-		{ name:"esicSlip", maxCount:1 },
-		{ name:"salarySlip", maxCount:1 }
-	]),
-	uploadAdminDocuments
+  "/upload/admin/:employeeId",
+  adminDocsUpload,
+  uploadAdminDocuments
 );
+
 router.get(
   "/profile-photo/:employeeId",
   getEmployeeProfilePhoto
 );
+
 module.exports = router;

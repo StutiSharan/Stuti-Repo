@@ -28,7 +28,10 @@ const EmployeeSchema = new mongoose.Schema(
     type:String,
     default:""
   },
-
+  profilePhoto:{
+      type:String,
+      default:""
+    },
   /* ================= LOGIN / OTP ================= */
   loginMobile:{
     type:String,
@@ -63,18 +66,11 @@ const EmployeeSchema = new mongoose.Schema(
       type:String,
       default:""
     },
-    marksheet10:{
-      type:String,
-      default:""
-    },
     marksheet12:{
       type:String,
       default:""
     },
-    profilePhoto:{
-      type:String,
-      default:""
-    },
+  
     graduation:{
       type:String,
       default:""

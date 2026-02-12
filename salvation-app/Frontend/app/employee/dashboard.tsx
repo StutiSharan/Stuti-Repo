@@ -8,7 +8,7 @@ import {
   Alert,
   Image,
   Pressable,
-  Modal
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -17,7 +17,13 @@ import BackButton from "../../components/BackButton";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getEmployeeProfile } from "../../api/employeeApi";
+import {
+  getEmployeeProfile,
+  getEmployeeProfilePhotoApi,
+} from "../../api/employeeApi";
+import { BackHandler } from "react-native";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 /* IMAGES */
 import salarySlip from "../../assets/images/salarySlip.png";
@@ -26,104 +32,136 @@ import offerLetter from "../../assets/images/OfferLetter.png";
 import uan from "../../assets/images/UAN.png";
 import upload from "../../assets/images/Upload.png";
 import defaultProfile from "../../assets/images/Myprofile.png";
+import React from "react";
 
-export default function Dashboard(){
-  const [loading,setLoading]=useState(true);
-  const [employeeId,setEmployeeId]=useState<string | null>(null);
-  const [employeeName,setEmployeeName]=useState("Employee Name");
-  const [profileImage,setProfileImage]=useState<string | null>(null);
-  const [menuOpen,setMenuOpen]=useState(false);
+export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [employeeName, setEmployeeName] = useState("Employee Name");
 
-  useEffect(()=>{
-    const loadProfile=async()=>{
-      try{
-        const id=await AsyncStorage.getItem("employeeId");
-        if(!id){
-          Alert.alert("Error","Employee ID missing");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const id = await AsyncStorage.getItem("employeeId");
+        const token = await AsyncStorage.getItem("employeeToken");
+
+        if (!id || !token) {
+          Alert.alert("Error", "Employee session missing");
           return;
         }
+
         setEmployeeId(id);
 
-        const res=await getEmployeeProfile(id);
-        if(res?.employee){
+        /* BASIC PROFILE */
+        const res = await getEmployeeProfile(id);
+        if (res?.employee) {
           setEmployeeName(res.employee.fullName || "Employee Name");
-          setProfileImage(res.employee.profileImage || null); // 👈 future DB image
         }
-      }catch{
-        Alert.alert("Error","Failed to load profile");
-      }finally{
+
+        /* PROFILE PHOTO – SAME API AS PROFILE SCREEN */
+        const photoRes = await getEmployeeProfilePhotoApi(id, token);
+        if (photoRes?.profilePhoto) {
+          setImageLoading(true);
+          setProfileImage(`${photoRes.profilePhoto}?t=${Date.now()}`);
+        }
+      } catch {
+        Alert.alert("Error", "Failed to load profile");
+      } finally {
         setLoading(false);
       }
     };
     loadProfile();
-  },[]);
+  }, []);
 
-  const handleLogout=()=>{
+  const handleLogout = () => {
     setMenuOpen(false);
-    Alert.alert("Logout","Are you sure you want to logout?",[
-      {text:"Cancel",style:"cancel"},
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text:"Logout",
-        style:"destructive",
-        onPress:async()=>{
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
           await AsyncStorage.clear();
           router.replace("/(tabs)/employee");
-        }
-      }
+        },
+      },
     ]);
   };
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          router.replace("/(tabs)/candidate");
+          return true;
+        },
+      );
 
-  const goToProfile=()=>{
+      return () => subscription.remove();
+    }, []),
+  );
+
+  const goToProfile = () => {
     setMenuOpen(false);
-    router.push({ pathname:"/employee/profile", params:{ employeeId } });
+    router.push({ pathname: "/employee/profile", params: { employeeId } });
   };
 
-  const handleCheckIn=()=>{
-    Alert.alert(
-      "Check In",
-      "Employee location will be saved.\n(We will implement this later)"
-    );
+  const handleCheckIn = () => {
+    Alert.alert("Check In", "Location capture will be added later");
   };
 
-  if(loading || !employeeId){
-    return(
+  if (loading || !employeeId) {
+    return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#1E3C72"/>
+        <ActivityIndicator size="large" color="#1E3C72" />
       </View>
     );
   }
 
-  return(
+  return (
     <View style={styles.container}>
-      <StatusBar style="light"/>
+      <StatusBar style="light" />
 
       {/* HEADER */}
-      <LinearGradient colors={["#1E3C72","#2A5298"]} style={styles.header}>
+      <LinearGradient colors={["#1E3C72", "#2A5298"]} style={styles.header}>
         <View style={styles.topRow}>
-          <View style={{flexDirection:"row",alignItems:"center"}}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <BackButton />
             <Text style={styles.dashboardTitle}>Dashboard</Text>
           </View>
 
-          <TouchableOpacity onPress={()=>setMenuOpen(true)}>
-            <Ionicons name="menu-outline" size={28} color="#fff"/>
+          <TouchableOpacity onPress={() => setMenuOpen(true)}>
+            <Ionicons name="menu-outline" size={28} color="#fff" />
           </TouchableOpacity>
         </View>
 
         {/* PROFILE ROW */}
         <View style={styles.profileRow}>
-          <Image
-            source={profileImage ? {uri:profileImage} : defaultProfile}
-            style={styles.profileImage}
-          />
+          <View style={styles.profileCircle}>
+            {imageLoading && (
+              <View style={styles.avatarLoader}>
+                <ActivityIndicator size="small" color="#1E3C72" />
+              </View>
+            )}
+            <Image
+              source={profileImage ? { uri: profileImage } : defaultProfile}
+              style={[styles.profileImage, imageLoading && { opacity: 0 }]}
+              onLoadEnd={() => setImageLoading(false)}
+            />
+          </View>
 
-          <View style={{flex:1,marginLeft:12}}>
+          <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={styles.name}>{employeeName}</Text>
             <Text style={styles.empId}>ID: {employeeId}</Text>
           </View>
 
           <TouchableOpacity style={styles.checkInBtn} onPress={handleCheckIn}>
-            <Ionicons name="location-outline" size={16} color="#fff"/>
+            <Ionicons name="location-outline" size={16} color="#fff" />
             <Text style={styles.checkInText}>Check In</Text>
           </TouchableOpacity>
         </View>
@@ -131,33 +169,80 @@ export default function Dashboard(){
 
       {/* CARDS */}
       <ScrollView contentContainerStyle={styles.cardWrap}>
-        <Card image={salarySlip} title="Salary Slip" onPress={()=>router.push({pathname:"/employee/upload-documents",params:{employeeId}})} />
-        <Card image={esic} title="ESIC Slip" onPress={()=>router.push({pathname:"/employee/my-documents",params:{employeeId}})} />
-        <Card image={offerLetter} title="Offer Letter" onPress={()=>router.push({pathname:"/employee/my-documents",params:{employeeId}})} />
-        <Card image={uan} title="UAN Document" onPress={()=>router.push({pathname:"/employee/my-documents",params:{employeeId}})} />
-        <Card image={upload} title="Upload Docs" onPress={()=>router.push({pathname:"/employee/upload-documents",params:{employeeId}})} />
+        <Card
+          image={salarySlip}
+          title="Salary Slip"
+          onPress={() =>
+            router.push({
+              pathname: "/employee/upload-documents",
+              params: { employeeId },
+            })
+          }
+        />
+        <Card
+          image={esic}
+          title="ESIC Slip"
+          onPress={() =>
+            router.push({
+              pathname: "/employee/my-documents",
+              params: { employeeId },
+            })
+          }
+        />
+        <Card
+          image={offerLetter}
+          title="Offer Letter"
+          onPress={() =>
+            router.push({
+              pathname: "/employee/my-documents",
+              params: { employeeId },
+            })
+          }
+        />
+        <Card
+          image={uan}
+          title="UAN Document"
+          onPress={() =>
+            router.push({
+              pathname: "/employee/my-documents",
+              params: { employeeId },
+            })
+          }
+        />
+        <Card
+          image={upload}
+          title="Upload Docs"
+          onPress={() =>
+            router.push({
+              pathname: "/employee/upload-documents",
+              params: { employeeId },
+            })
+          }
+        />
         <Card image={defaultProfile} title="My Profile" onPress={goToProfile} />
       </ScrollView>
 
-      {/* HAMBURGER MENU – BOTTOM SHEET */}
+      {/* HAMBURGER MENU */}
       <Modal transparent visible={menuOpen} animationType="slide">
-        <Pressable style={styles.overlay} onPress={()=>setMenuOpen(false)}>
+        <Pressable style={styles.overlay} onPress={() => setMenuOpen(false)}>
           <View style={styles.sheet}>
             <Image
-              source={profileImage ? {uri:profileImage} : defaultProfile}
+              source={profileImage ? { uri: profileImage } : defaultProfile}
               style={styles.sheetProfile}
             />
             <Text style={styles.sheetName}>{employeeName}</Text>
             <Text style={styles.sheetId}>{employeeId}</Text>
 
             <TouchableOpacity style={styles.sheetItem} onPress={goToProfile}>
-              <Ionicons name="person-outline" size={20} color="#1E3C72"/>
+              <Ionicons name="person-outline" size={20} color="#1E3C72" />
               <Text style={styles.sheetText}>My Profile</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.sheetItem} onPress={handleLogout}>
-              <Ionicons name="log-out-outline" size={20} color="#d32f2f"/>
-              <Text style={[styles.sheetText,{color:"#d32f2f"}]}>Logout</Text>
+              <Ionicons name="log-out-outline" size={20} color="#d32f2f" />
+              <Text style={[styles.sheetText, { color: "#d32f2f" }]}>
+                Logout
+              </Text>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -166,97 +251,139 @@ export default function Dashboard(){
   );
 }
 
-const Card=({image,title,onPress}:any)=>(
+const Card = ({ image, title, onPress }: any) => (
   <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
     <View style={styles.circle}>
-      <Image
-        source={image}
-        style={styles.circleImage}
-        resizeMode="cover"
-      />
+      <Image source={image} style={styles.circleImage} />
     </View>
     <Text style={styles.cardText}>{title}</Text>
   </TouchableOpacity>
 );
 
 /* STYLES */
-const styles=StyleSheet.create({
-  loader:{flex:1,justifyContent:"center",alignItems:"center"},
-  container:{flex:1,backgroundColor:"#F4F6FA"},
-  header:{paddingTop:55,paddingBottom:30,paddingHorizontal:20,borderBottomLeftRadius:26,borderBottomRightRadius:26},
-  topRow:{flexDirection:"row",justifyContent:"space-between",alignItems:"center"},
-  dashboardTitle:{color:"#fff",fontSize:18,fontWeight:"700",marginLeft:8},
-  profileRow:{flexDirection:"row",alignItems:"center",marginTop:20},
-  profileImage:{width:56,height:56,borderRadius:28,backgroundColor:"#fff"},
-  name:{color:"#fff",fontSize:18,fontWeight:"700"},
-  empId:{color:"#D6E0FF",fontSize:13},
-  checkInBtn:{flexDirection:"row",alignItems:"center",backgroundColor:"#4CAF50",paddingHorizontal:14,paddingVertical:8,borderRadius:20},
-  checkInText:{color:"#fff",fontSize:12,fontWeight:"700",marginLeft:6},
-  cardWrap:{
-  flexDirection:"row",
-  flexWrap:"wrap",
-  justifyContent:"space-between",
-  padding:20
-},
+const styles = StyleSheet.create({
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: { flex: 1, backgroundColor: "#F4F6FA" },
+  header: {
+    paddingTop: 55,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
+  },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dashboardTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginLeft: 8,
+  },
 
-/* CARD NOW LOOKS LIKE ICONBOX */
-card:{
-  width:"48%",
-  backgroundColor:"#EEF3FF",
-  borderRadius:20,
-  paddingVertical:26,
-  alignItems:"center",
-  marginBottom:18,
-  elevation:4
-},
+  profileRow: { flexDirection: "row", alignItems: "center", marginTop: 20 },
 
-/* PERFECT CIRCLE */
-circle:{
-  width:96,              // 👈 bigger
-  height:96,
-  borderRadius:48,
-  backgroundColor:"#fff",
-  justifyContent:"center",
-  alignItems:"center",
-  overflow:"hidden"      // 👈 IMPORTANT for circle crop
-},
+  profileCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  profileImage: { width: "100%", height: "100%" },
+  avatarLoader: { position: "absolute", zIndex: 10 },
 
-/* IMAGE FITS CIRCLE */
-circleImage:{
-  width:"100%",
-  height:"100%"
-},
+  name: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  empId: { color: "#D6E0FF", fontSize: 13 },
 
-cardText:{
-  marginTop:14,
-  fontSize:14,
-  fontWeight:"600",
-  color:"#1E3C72",
-  textAlign:"center"
-},
+  checkInBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  checkInText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
+    marginLeft: 6,
+  },
 
-cardIconWrapper:{
-  width:74,
-  height:74,
-  borderRadius:37,
-  backgroundColor:"#fff",     // 👈 image sits on white circle
-  justifyContent:"center",
-  alignItems:"center"
-},
+  cardWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: 20,
+  },
 
-iconImg:{
-  width:100,
-  height:50
-},
+  card: {
+    width: "48%",
+    backgroundColor: "#EEF3FF",
+    borderRadius: 20,
+    paddingVertical: 26,
+    alignItems: "center",
+    marginBottom: 18,
+    elevation: 4,
+  },
+  circle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+  },
+  circleImage: { width: "100%", height: "100%" },
+  cardText: {
+    marginTop: 14,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1E3C72",
+  },
 
- iconBox:{width:74,height:74,borderRadius:32,backgroundColor:"#EEF3FF",justifyContent:"center",alignItems:"center"},
-
-  overlay:{flex:1,justifyContent:"flex-end",backgroundColor:"rgba(0,0,0,0.4)"},
-  sheet:{backgroundColor:"#fff",padding:20,borderTopLeftRadius:20,borderTopRightRadius:20},
-  sheetProfile:{width:70,height:70,borderRadius:35,alignSelf:"center"},
-  sheetName:{fontSize:18,fontWeight:"700",textAlign:"center",marginTop:10},
-  sheetId:{fontSize:13,color:"#777",textAlign:"center",marginBottom:20},
-  sheetItem:{flexDirection:"row",alignItems:"center",paddingVertical:14},
-  sheetText:{marginLeft:12,fontSize:16,fontWeight:"600",color:"#1E3C72"}
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  sheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  sheetProfile: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    alignSelf: "center",
+  },
+  sheetName: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 10,
+  },
+  sheetId: {
+    fontSize: 13,
+    color: "#777",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  sheetItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  sheetText: {
+    marginLeft: 12,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1E3C72",
+  },
 });
-

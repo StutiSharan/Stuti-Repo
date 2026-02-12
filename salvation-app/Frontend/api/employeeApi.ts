@@ -81,7 +81,6 @@ export const uploadEmployeeDocumentsApi = async (
     aadhaar?:any;
     pan?:any;
     bankPassbook?:any;
-    marksheet10?:any;
     marksheet12?:any;
     profilePhoto?:any;
     graduation?:any;

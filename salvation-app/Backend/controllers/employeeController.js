@@ -7,11 +7,10 @@ const EMPLOYEE_UPLOAD_FIELDS = [
   "aadhaar",
   "pan",
   "bankPassbook",
-  "marksheet10",
   "marksheet12",
-  "profilePhoto",
   "graduation"
 ];
+
 
 const ADMIN_UPLOAD_FIELDS = [
   "offerLetter",
@@ -118,8 +117,6 @@ exports.getEmployeeProfile = async (req,res)=>{
   }
 };
 
-
-/* ================= UPDATE PROFILE (WITH PROFILE PHOTO) ================= */
 exports.updateEmployeeProfile = async(req,res)=>{
   try{
     const { employeeId } = req.params;
@@ -148,7 +145,7 @@ exports.updateEmployeeProfile = async(req,res)=>{
         }
       );
 
-      employee.employeeUploads.profilePhoto = s3Key;
+      employee.profilePhoto = s3Key;
     }
 
     await employee.save();
@@ -164,43 +161,35 @@ exports.updateEmployeeProfile = async(req,res)=>{
     res.status(500).json({ message:"Server error" });
   }
 };
-exports.uploadEmployeeDocuments = async(req,res)=>{
+exports.uploadEmployeeDocuments=async(req,res)=>{
   try{
-    let { employeeId } = req.params;
+    let { employeeId }=req.params;
+    if(Array.isArray(employeeId)) employeeId=employeeId[0];
 
-    // ✅ normalize employeeId
-    if(Array.isArray(employeeId)){
-      employeeId = employeeId[0];
-    }
-
-    console.log("UPLOAD employeeId:", employeeId);
-
-    const employee = await Employee.findOne({ employeeId });
-
+    const employee=await Employee.findOne({employeeId});
     if(!employee){
-      return res.status(404).json({ message:"Employee not found" });
-    }
-    if(!employee){
-      return res.status(404).json({ message:"Employee not found" });
+      return res.status(404).json({message:"Employee not found"});
     }
 
-    if(!req.files){
-      return res.status(400).json({ message:"No files uploaded" });
+    if(!req.files || Object.keys(req.files).length===0){
+      return res.status(400).json({message:"No files uploaded"});
     }
 
     for(const field of EMPLOYEE_UPLOAD_FIELDS){
       if(req.files[field]?.[0]){
-        const s3Key = await uploadToS3(
-          req.files[field][0],
-          {
-            module:"employee",
-            documentType:field,
-            name:employee.fullName || employee.employeeId,
-            id:employee.employeeId
-          }
-        );
+        const file=req.files[field][0];
 
-        employee.employeeUploads[field] = s3Key;
+        // 🔍 LOG TYPE (debug once)
+        console.log(`Uploading ${field}:`,file.mimetype);
+
+        const s3Key=await uploadToS3(file,{
+          module:"employee",
+          documentType:field,
+          name:employee.fullName || employee.employeeId,
+          id:employee.employeeId
+        });
+
+        employee.employeeUploads[field]=s3Key;
       }
     }
 
@@ -214,9 +203,10 @@ exports.uploadEmployeeDocuments = async(req,res)=>{
 
   }catch(err){
     console.error("🔥 uploadEmployeeDocuments:",err);
-    res.status(500).json({ message:"Server error" });
+    res.status(500).json({message:"Server error"});
   }
 };
+
 exports.uploadAdminDocuments = async(req,res)=>{
   try{
     const { employeeId } = req.params;
@@ -303,9 +293,7 @@ exports.getEmployeeDocuments = async(req,res)=>{
         aadhaar: await getSignedUrlFromKey(employeeDocs.aadhaar),
         pan: await getSignedUrlFromKey(employeeDocs.pan),
         bankPassbook: await getSignedUrlFromKey(employeeDocs.bankPassbook),
-        marksheet10: await getSignedUrlFromKey(employeeDocs.marksheet10),
         marksheet12: await getSignedUrlFromKey(employeeDocs.marksheet12),
-        profilePhoto: await getSignedUrlFromKey(employeeDocs.profilePhoto),
         graduation: await getSignedUrlFromKey(employeeDocs.graduation)
       },
       letters:{
@@ -343,14 +331,14 @@ exports.getEmployeeProfilePhoto = async (req, res) => {
     }
 
     const employee = await Employee.findOne({ employeeId }).select(
-      "employeeUploads.profilePhoto"
+      "profilePhoto"
     );
 
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    const key = employee.employeeUploads?.profilePhoto;
+    const key = employee?.profilePhoto;
 
     if (!key) {
       return res.json({
