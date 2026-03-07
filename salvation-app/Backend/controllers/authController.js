@@ -1,79 +1,133 @@
-const LoginData=require("../models/LoginData");
-const jwt=require("jsonwebtoken");
-// const axios=require("axios"); // for Fast2SMS later
+const LoginData = require("../models/LoginData");
+const jwt = require("jsonwebtoken");
 
-// STEP 1: SEND OTP
-exports.sendOtp=async(req,res)=>{
-  try{
-    const {fullName,phone}=req.body;
+// helper error response
+const sendError = (res, status, message, error = null) => {
+  return res.status(status).json({
+    success: false,
+    message,
+    ...(process.env.NODE_ENV === "development" && error
+      ? { error: error.message }
+      : {})
+  });
+};
 
-    if(!fullName||!phone){
-      return res.status(400).json({message:"Full name and phone required"});
+exports.sendOtp = async (req, res) => {
+  try {
+    let { fullName, phone } = req.body;
+
+    if (!phone) {
+      return sendError(res, 400, "Phone required");
     }
 
-    // STATIC OTP FOR NOW
-    const otp="123456";
+    /* ================= NORMALIZE PHONE ================= */
+    phone = phone.replace(/\D/g,"");
+    if(phone.length===10) phone = "+91"+phone;
 
-    // 🔁 Fast2SMS integration (ENABLE LATER)
-    /*
-    await axios.post("https://www.fast2sms.com/dev/bulkV2",{
-      route:"otp",
-      numbers:phone,
-      message:`Your OTP is ${otp}`
-    },{
-      headers:{
-        authorization:process.env.FAST2SMS_API_KEY
-      }
-    });
-    */
+    if (!/^\+\d{10,13}$/.test(phone)) {
+      return sendError(res, 400, "Invalid phone format");
+    }
 
-    let loginData=await LoginData.findOne({phone});
+    const otp = "123456";
+
+    let loginData = await LoginData.findOne({ phone });
+
+    /* ======================================================
+       EXISTING VERIFIED USER → DIRECT LOGIN
+    ====================================================== */
+
+    if(loginData && loginData.otpStatus==="verified"){
+
+      loginData.lastLoggedInAt = new Date();
+      loginData.loginAt = new Date();
+      await loginData.save();
+
+      const token = jwt.sign(
+        { id: loginData._id, phone: loginData.phone },
+        process.env.JWT_SECRET,
+        { expiresIn:"3d" }
+      );
+
+      return res.json({
+        success:true,
+        directLogin:true,
+        token,
+        message:"Welcome back"
+      });
+    }
+
+    /* ======================================================
+       NEW USER OR NOT VERIFIED → SEND OTP
+    ====================================================== */
 
     if(!loginData){
-      loginData=await LoginData.create({
+      loginData = await LoginData.create({
         fullName,
         phone,
         otpStatus:"pending"
       });
+    }else{
+      loginData.otpStatus="pending";
+      await loginData.save();
     }
 
-    res.json({message:"OTP sent successfully"});
-  }catch(err){
-    res.status(500).json({message:"Server error"});
+    return res.json({
+      success:true,
+      directLogin:false,
+      message:"OTP sent"
+    });
+
+  } catch (err) {
+    console.error(err);
+    return sendError(res, 500, "Failed", err);
   }
 };
 
-// STEP 2: VERIFY OTP
-exports.verifyOtp=async(req,res)=>{
-  try{
-    const {phone,otp}=req.body;
+// =============================
+// VERIFY OTP
+// =============================
+exports.verifyOtp = async (req, res) => {
+  try {
+    let { phone, otp } = req.body;
 
-    // STATIC OTP CHECK
-    if(otp!=="123456"){
-      return res.status(401).json({message:"Invalid OTP"});
+phone = phone.replace(/\D/g,"");
+if(phone.length===10) phone = "+91"+phone;
+    if (!phone || !otp) {
+      return sendError(res, 400, "Phone and OTP required");
     }
 
-    const loginData=await LoginData.findOne({phone});
-    if(!loginData){
-      return res.status(404).json({message:"User not found"});
+    if (otp !== "123456") {
+      return sendError(res, 401, "Invalid OTP");
     }
 
-    loginData.otpStatus="verified";
-    loginData.loginAt=new Date();
-    loginData.lastLoggedInAt=new Date();
+    const loginData = await LoginData.findOne({ phone });
+    if (!loginData) {
+      return sendError(res, 404, "User not found");
+    }
+
+    loginData.otpStatus = "verified";
+    loginData.loginAt = new Date();
+    loginData.lastLoggedInAt = new Date();
     await loginData.save();
 
-    const token=jwt.sign(
-      {id:loginData._id,phone:loginData.phone},
+    if (!process.env.JWT_SECRET) {
+      return sendError(res, 500, "JWT secret not configured");
+    }
+
+    const token = jwt.sign(
+      { id: loginData._id, phone: loginData.phone },
       process.env.JWT_SECRET,
-      {expiresIn:"3d"}
+      { expiresIn: "3d" }
     );
 
-    res.json({
-      message:"Login successful",
+    return res.json({
+      success: true,
+      message: "Login successful",
       token
     });
-  }catch(err){
-    res.status(500).json({message:"Server error"});
+
+  } catch (err) {
+    console.error("VERIFY OTP ERROR:", err);
+    return sendError(res, 500, "OTP verification failed", err);
   }
 };

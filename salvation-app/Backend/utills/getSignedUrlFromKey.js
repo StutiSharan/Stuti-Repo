@@ -7,8 +7,11 @@ exports.getSignedUrlFromKey = async(key)=>{
 
   const command = new GetObjectCommand({
     Bucket:process.env.AWS_S3_BUCKET,
-    Key:key
+    Key:key,
+
+    // ✅ FORCE BROWSER TO PREVIEW (NOT DOWNLOAD)
+    ResponseContentDisposition:"inline"
   });
 
-  return await getSignedUrl(s3,command,{ expiresIn:300 }); // 5 min
+  return await getSignedUrl(s3,command,{ expiresIn:300 });
 };

@@ -24,7 +24,8 @@ import {
 import { BackHandler } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
-
+import * as Location from "expo-location";
+import { employeeCheckInApi } from "../../api/employeeApi";
 /* IMAGES */
 import salarySlip from "../../assets/images/salarySlip.png";
 import esic from "../../assets/images/ESIC.png";
@@ -33,7 +34,7 @@ import uan from "../../assets/images/UAN.png";
 import upload from "../../assets/images/Upload.png";
 import defaultProfile from "../../assets/images/Myprofile.png";
 import React from "react";
-
+import AppLoader from "../../components/Loader";
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
@@ -111,15 +112,66 @@ export default function Dashboard() {
     router.push({ pathname: "/employee/profile", params: { employeeId } });
   };
 
-  const handleCheckIn = () => {
-    Alert.alert("Check In", "Location capture will be added later");
-  };
+ const handleCheckIn = async()=>{
+  try{
+    setLoading(true);
+
+    const token = await AsyncStorage.getItem("employeeToken");
+    if(!employeeId || !token){
+      Alert.alert("Error","Session expired");
+      return;
+    }
+
+    /* ================= ASK PERMISSION ================= */
+    const { status } = await Location.requestForegroundPermissionsAsync();
+
+    if(status !== "granted"){
+      Alert.alert("Permission denied","Location permission required");
+      return;
+    }
+
+    /* ================= GET CURRENT LOCATION ================= */
+    const loc = await Location.getCurrentPositionAsync({
+      accuracy:Location.Accuracy.High
+    });
+
+    const latitude = loc.coords.latitude;
+    const longitude = loc.coords.longitude;
+
+    /* ================= OPTIONAL ADDRESS ================= */
+    const reverse = await Location.reverseGeocodeAsync({
+      latitude,
+      longitude
+    });
+
+    let address = "";
+    if(reverse.length>0){
+      const a = reverse[0];
+      address = `${a.name||""} ${a.street||""} ${a.city||""}`;
+    }
+
+    /* ================= SEND TO SERVER ================= */
+    await employeeCheckInApi(employeeId,token,{
+      latitude,
+      longitude,
+      address
+    });
+
+    Alert.alert("Success","Checked in successfully");
+
+  }catch(err:any){
+    Alert.alert("Error",err.message || "Check-in failed");
+  }finally{
+    setLoading(false);
+  }
+};
 
   if (loading || !employeeId) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#1E3C72" />
-      </View>
+      <View style={styles.loadingOverlay}>
+          <AppLoader size={50} color="#1E3C72" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
     );
   }
 
@@ -174,7 +226,7 @@ export default function Dashboard() {
           title="Salary Slip"
           onPress={() =>
             router.push({
-              pathname: "/employee/upload-documents",
+              pathname: "/employee/salary-slips",
               params: { employeeId },
             })
           }
@@ -183,30 +235,30 @@ export default function Dashboard() {
           image={esic}
           title="ESIC Slip"
           onPress={() =>
-            router.push({
-              pathname: "/employee/my-documents",
-              params: { employeeId },
-            })
+           router.push({
+ pathname:"/employee/document-viewer",
+ params:{ type:"esicSlip" }
+})
           }
         />
         <Card
           image={offerLetter}
           title="Offer Letter"
           onPress={() =>
-            router.push({
-              pathname: "/employee/my-documents",
-              params: { employeeId },
-            })
+           router.push({
+ pathname:"/employee/document-viewer",
+ params:{ type:"offerLetter" }
+})
           }
         />
         <Card
           image={uan}
           title="UAN Document"
           onPress={() =>
-            router.push({
-              pathname: "/employee/my-documents",
-              params: { employeeId },
-            })
+           router.push({
+ pathname:"/employee/document-viewer",
+ params:{ type:"uanLetter" }
+})
           }
         />
         <Card
@@ -247,6 +299,12 @@ export default function Dashboard() {
           </View>
         </Pressable>
       </Modal>
+      {(loading || !employeeId) && (
+  <View style={styles.loadingOverlay}>
+    <AppLoader size={50} color="#1E3C72" />
+    <Text style={styles.loadingText}>Loading...</Text>
+  </View>
+)}
     </View>
   );
 }
@@ -271,6 +329,23 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 26,
     borderBottomRightRadius: 26,
   },
+  loadingOverlay:{
+ position:"absolute",
+ top:0,
+ left:0,
+ right:0,
+ bottom:0,
+ backgroundColor:"rgba(255,255,255,0.7)",
+ justifyContent:"center",
+ alignItems:"center",
+ zIndex:999
+},
+
+loadingText:{
+ marginTop:12,
+ fontWeight:"600",
+ color:"#1E3C72"
+},
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",

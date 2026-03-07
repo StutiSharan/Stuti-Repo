@@ -47,57 +47,49 @@ exports.sendOtp = async (req,res)=>{
 };
 
 
-/* ================= VERIFY OTP ================= */
 exports.verifyOtp = async (req,res)=>{
-  try{
-    const { employeeId, otp, loginMobile } = req.body;
+ try{
+  const { employeeId, otp } = req.body
 
-    if(!employeeId || !otp){
-      return res.status(400).json({ message:"Employee ID & OTP required" });
-    }
-
-    // ❌ TEMP OTP CHECK (replace with real check later)
-    if(otp !== "123456"){
-      return res.status(401).json({ message:"Invalid OTP" });
-    }
-
-    let employee = await Employee.findOne({ employeeId });
-
-    /* ================= CREATE ONLY AFTER VERIFY ================= */
-    if(!employee){
-      employee = await Employee.create({
-        employeeId,
-        loginMobile,
-        otpVerified:true,
-        loginAt:new Date(),
-        lastLoginAt:new Date()
-      });
-      console.log("🆕 Employee created after OTP verify:", employeeId);
-    }else{
-      employee.otpVerified = true;
-      employee.lastLoginAt = new Date();
-      await employee.save();
-      console.log("🔁 Employee login updated:", employeeId);
-    }
-
-    /* ================= JWT ================= */
-    const token = jwt.sign(
-      { id: employee._id, role: employee.role },
-      process.env.JWT_SECRET,
-      { expiresIn:"1d" }
-    );
-
-    res.json({
-      success:true,
-      token,
-      employeeId: employee.employeeId
-    });
-
-  }catch(err){
-    console.error("🔥 verifyOtp error:",err);
-    res.status(500).json({ message:"Server error" });
+  if(!employeeId || !otp){
+   return res.status(400).json({message:"Employee ID & OTP required"})
   }
-};
+
+  if(otp !== "123456"){
+   return res.status(401).json({message:"Invalid OTP"})
+  }
+
+  const employee = await Employee.findOne({employeeId})
+
+  if(!employee){
+   return res.status(404).json({
+    message:"Employee ID not registered. Contact admin."
+   })
+  }
+
+  employee.otpVerified = true
+  employee.lastLoginAt = new Date()
+  await employee.save()
+
+  const token = jwt.sign(
+   { id: employee._id, role: employee.role },
+   process.env.JWT_SECRET,
+   { expiresIn:"1d" }
+  )
+
+  res.json({
+   success:true,
+   token,
+   employeeId:employee.employeeId
+  })
+
+ }catch(err){
+  console.error(err)
+  res.status(500).json({message:"Server error"})
+ }
+}
+
+
 
 
 /* ================= GET PROFILE ================= */
@@ -357,5 +349,160 @@ exports.getEmployeeProfilePhoto = async (req, res) => {
   } catch (error) {
     console.error("🔥 getEmployeeProfilePhoto:", error);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+exports.getEmployeeDocuments = async (req,res)=>{
+ try{
+
+  let { employeeId } = req.params
+
+  if(Array.isArray(employeeId)){
+   employeeId = employeeId[0]
+  }
+
+  if(!employeeId){
+   return res.status(400).json({ message:"Employee ID missing" })
+  }
+
+  const employee = await Employee.findOne({ employeeId })
+
+  if(!employee){
+   return res.status(404).json({ message:"Employee not found" })
+  }
+
+  const empUploads = employee.employeeUploads || {}
+  const companyUploads = employee.companyUploads || {}
+
+  /* =====================================================
+     HELPER → SAFE SIGNED URL
+  ===================================================== */
+
+  const safeUrl = async(key)=>{
+   if(!key) return null
+   return await getSignedUrlFromKey(key)
+  }
+
+  /* =====================================================
+     EMPLOYEE UPLOADS (SELF DOCUMENTS)
+  ===================================================== */
+
+  const employeeDocuments = {
+   aadhaar: empUploads.aadhaar
+     ? { key: empUploads.aadhaar, url: await safeUrl(empUploads.aadhaar) }
+     : null,
+
+   pan: empUploads.pan
+     ? { key: empUploads.pan, url: await safeUrl(empUploads.pan) }
+     : null,
+
+   bankPassbook: empUploads.bankPassbook
+     ? { key: empUploads.bankPassbook, url: await safeUrl(empUploads.bankPassbook) }
+     : null,
+
+   marksheet12: empUploads.marksheet12
+     ? { key: empUploads.marksheet12, url: await safeUrl(empUploads.marksheet12) }
+     : null,
+
+   graduation: empUploads.graduation
+     ? { key: empUploads.graduation, url: await safeUrl(empUploads.graduation) }
+     : null
+  }
+
+  /* =====================================================
+     COMPANY DOCUMENTS
+  ===================================================== */
+
+  const companyDocuments = {
+   offerLetter: companyUploads.offerLetter
+     ? { key: companyUploads.offerLetter, url: await safeUrl(companyUploads.offerLetter) }
+     : null,
+
+   appointmentLetter: companyUploads.appointmentLetter
+     ? { key: companyUploads.appointmentLetter, url: await safeUrl(companyUploads.appointmentLetter) }
+     : null,
+
+   uanLetter: companyUploads.uanLetter
+     ? { key: companyUploads.uanLetter, url: await safeUrl(companyUploads.uanLetter) }
+     : null,
+
+   esicSlip: companyUploads.esicSlip
+     ? { key: companyUploads.esicSlip, url: await safeUrl(companyUploads.esicSlip) }
+     : null
+  }
+
+  /* =====================================================
+     SALARY SLIPS
+  ===================================================== */
+
+  const salarySlips = []
+
+  if(companyUploads.salarySlips?.length){
+   for(const slip of companyUploads.salarySlips){
+    salarySlips.push({
+     month: slip.month,
+     year: slip.year,
+     key: slip.key,
+     uploadedAt: slip.uploadedAt,
+     url: await safeUrl(slip.key)
+    })
+   }
+  }
+
+  /* =====================================================
+     FINAL RESPONSE (CLEAN STRUCTURE)
+  ===================================================== */
+
+  res.json({
+   success:true,
+   documents:{
+    employeeUploads: employeeDocuments,
+    companyUploads: companyDocuments,
+    salarySlips
+   }
+  })
+
+ }catch(err){
+  console.error("🔥 getEmployeeDocuments:",err)
+  res.status(500).json({ message:"Server error" })
+ }
+}
+/* ================= EMPLOYEE CHECK IN ================= */
+exports.employeeCheckIn = async(req,res)=>{
+  try{
+    const { employeeId } = req.params;
+    const { latitude, longitude, address } = req.body;
+
+    if(!latitude || !longitude){
+      return res.status(400).json({
+        message:"Location coordinates required"
+      });
+    }
+
+    const employee = await Employee.findOne({ employeeId });
+
+    if(!employee){
+      return res.status(404).json({
+        message:"Employee not found"
+      });
+    }
+
+    employee.checkinLocation = {
+      latitude,
+      longitude,
+      address: address || "",
+      checkedInAt:new Date()
+    };
+
+    await employee.save();
+
+    res.json({
+      success:true,
+      message:"Checked in successfully",
+      checkinLocation:employee.checkinLocation
+    });
+
+  }catch(err){
+    console.error("🔥 employeeCheckIn:",err);
+    res.status(500).json({ message:"Server error" });
   }
 };

@@ -10,6 +10,7 @@ const {
   uploadAdminDocuments,
   getEmployeeDocuments,
   getEmployeeProfilePhoto,
+  employeeCheckIn,
 } = require("../controllers/employeeController");
 
 const router = express.Router();
@@ -71,5 +72,6 @@ router.get(
   "/profile-photo/:employeeId",
   getEmployeeProfilePhoto
 );
-
+/* ================= CHECK IN ================= */
+router.post("/checkin/:employeeId", employeeCheckIn);
 module.exports = router;

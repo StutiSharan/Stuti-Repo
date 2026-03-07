@@ -19,93 +19,107 @@ import {
 } from "../../api/employeeApi";
 
 export default function Employee() {
-  const [step, setStep] = useState<"FORM" | "OTP">("FORM");
-  const [employeeId, setEmployeeId] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem("employeeToken");
-      if (token) {
-        router.replace("/employee/dashboard");
+  const [step,setStep]=useState<"FORM"|"OTP">("FORM")
+  const [employeeId,setEmployeeId]=useState("")
+  const [mobile,setMobile]=useState("")
+  const [otp,setOtp]=useState("")
+  const [loading,setLoading]=useState(false)
+
+  useEffect(()=>{
+    const checkAuth=async()=>{
+      const token=await AsyncStorage.getItem("employeeToken")
+      if(token){
+        router.replace("/employee/dashboard")
       }
-    };
-    checkAuth();
-  }, []);
-  const isValidMobile = (value: string) => {
-    return /^[0-9]{10}$/.test(value);
-  };
+    }
+    checkAuth()
+  },[])
 
-  const sendOtp = async () => {
-    if (!employeeId.trim()) {
-      Alert.alert("Required", "Enter Employee ID");
-      return;
+  const isValidMobile=(value:string)=>{
+    return /^[0-9]{10}$/.test(value)
+  }
+
+  /* ================= SEND OTP ================= */
+
+  const sendOtp=async()=>{
+
+    if(!employeeId.trim()){
+      Alert.alert("Required","Enter Employee ID")
+      return
     }
 
-    if (!mobile.trim()) {
-      Alert.alert("Required", "Enter Mobile Number");
-      return;
+    if(!mobile.trim()){
+      Alert.alert("Required","Enter Mobile Number")
+      return
     }
 
-    if (!isValidMobile(mobile)) {
-      Alert.alert(
-        "Invalid Mobile Number",
-        "Mobile number must be exactly 10 digits",
-      );
-      return;
+    if(!isValidMobile(mobile)){
+      Alert.alert("Invalid Mobile Number","Mobile must be 10 digits")
+      return
     }
 
-    try {
-      setLoading(true);
+    try{
+      setLoading(true)
 
       await sendEmployeeOtpApi({
         employeeId,
-        loginMobile: mobile,
-      });
+        loginMobile:mobile
+      })
 
-      setStep("OTP");
-      Alert.alert("OTP Sent", "Please check your phone");
-    } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to send OTP");
-    } finally {
-      setLoading(false);
+      setStep("OTP")
+      Alert.alert("OTP Sent","Please check your phone")
+
+    }catch(err:any){
+      Alert.alert("Error",err.message || "Failed to send OTP")
+    }finally{
+      setLoading(false)
     }
-  };
+  }
 
-  /* ---------- VERIFY OTP ---------- */
-  const verifyOtp = async () => {
-    if (!otp) {
-      Alert.alert("Required", "Enter OTP");
-      return;
+  /* ================= VERIFY OTP ================= */
+
+  const verifyOtp=async()=>{
+
+    if(!otp){
+      Alert.alert("Required","Enter OTP")
+      return
     }
 
-    try {
-      setLoading(true);
-      const res = await verifyEmployeeOtpApi({
+    try{
+      setLoading(true)
+
+      const res=await verifyEmployeeOtpApi({
         employeeId,
         otp,
-        loginMobile: mobile,
-      });
+        loginMobile:mobile
+      })
 
-      await AsyncStorage.setItem("employeeToken", res.token);
-      await AsyncStorage.setItem("employeeId", res.employeeId);
+      await AsyncStorage.setItem("employeeToken",res.token)
+      await AsyncStorage.setItem("employeeId",res.employeeId)
 
-      router.replace("/employee/dashboard");
-    } catch (err: any) {
-      Alert.alert("Invalid OTP", err.message);
-    } finally {
-      setLoading(false);
+      router.replace("/employee/dashboard")
+
+    }catch(err:any){
+      Alert.alert("Invalid OTP",err.message)
+    }finally{
+      setLoading(false)
     }
-  };
+  }
 
-  return (
+  /* ================= GO BACK TO FORM ================= */
+
+  const goBackToForm=()=>{
+    setStep("FORM")
+    setOtp("")
+  }
+
+  return(
     <View style={styles.container}>
-      <StatusBar style="light" backgroundColor="#0A1F44" />
+      <StatusBar style="light" backgroundColor="#0A1F44"/>
 
       <View style={styles.header}>
-        <Ionicons name="briefcase" size={42} color="#fff" />
+        <Ionicons name="briefcase" size={42} color="#fff"/>
         <Text style={styles.brand}>Employee Portal</Text>
         <Text style={styles.subtitle}>Authorized access only</Text>
       </View>
@@ -113,10 +127,12 @@ export default function Employee() {
       <View style={styles.card}>
         <Text style={styles.title}>Employee Login</Text>
 
-        {step === "FORM" && (
+        {/* ================= FORM ================= */}
+
+        {step==="FORM" &&(
           <>
             <View style={styles.inputBox}>
-              <Ionicons name="id-card-outline" size={20} color="#607d8b" />
+              <Ionicons name="id-card-outline" size={20} color="#607d8b"/>
               <TextInput
                 placeholder="Employee ID"
                 value={employeeId}
@@ -126,13 +142,13 @@ export default function Employee() {
             </View>
 
             <View style={styles.inputBox}>
-              <Ionicons name="call-outline" size={20} color="#607d8b" />
+              <Ionicons name="call-outline" size={20} color="#607d8b"/>
               <TextInput
                 placeholder="Registered Mobile Number"
                 keyboardType="number-pad"
                 maxLength={10}
                 value={mobile}
-                onChangeText={(text) => setMobile(text.replace(/[^0-9]/g, ""))}
+                onChangeText={t=>setMobile(t.replace(/[^0-9]/g,""))}
                 style={styles.input}
               />
             </View>
@@ -142,19 +158,29 @@ export default function Employee() {
               onPress={sendOtp}
               disabled={loading}
             >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Send OTP</Text>
-              )}
+              {loading
+                ? <ActivityIndicator color="#fff"/>
+                : <Text style={styles.buttonText}>Send OTP</Text>
+              }
             </TouchableOpacity>
           </>
         )}
 
-        {step === "OTP" && (
+        {/* ================= OTP ================= */}
+
+        {step==="OTP" &&(
           <>
+            {/* BACK BUTTON */}
+            <TouchableOpacity
+              style={styles.backRow}
+              onPress={goBackToForm}
+            >
+              <Ionicons name="arrow-back" size={18} color="#0A1F44"/>
+              <Text style={styles.backText}>Edit mobile or employee ID</Text>
+            </TouchableOpacity>
+
             <View style={styles.inputBox}>
-              <Ionicons name="key-outline" size={20} color="#607d8b" />
+              <Ionicons name="key-outline" size={20} color="#607d8b"/>
               <TextInput
                 placeholder="Enter OTP"
                 keyboardType="number-pad"
@@ -170,98 +196,91 @@ export default function Employee() {
               onPress={verifyOtp}
               disabled={loading}
             >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Verify & Login</Text>
-              )}
+              {loading
+                ? <ActivityIndicator color="#fff"/>
+                : <Text style={styles.buttonText}>Verify & Login</Text>
+              }
             </TouchableOpacity>
           </>
         )}
+
       </View>
     </View>
-  );
+  )
 }
 
-/* styles unchanged */
+/* ================= STYLES ================= */
 
-/* ---------- STYLES (UNCHANGED) ---------- */
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0A1F44",
-    justifyContent: "center",
-    padding: 20,
-    paddingBottom: 80,
+const styles=StyleSheet.create({
+  container:{
+    flex:1,
+    backgroundColor:"#0A1F44",
+    justifyContent:"center",
+    padding:20,
+    paddingBottom:80
   },
-  header: {
-    alignItems: "center",
-    marginBottom: 30,
+  header:{alignItems:"center",marginBottom:30},
+  brand:{fontSize:24,fontWeight:"700",color:"#fff",marginTop:10},
+  subtitle:{fontSize:14,color:"#cfd8dc",marginTop:4},
+
+  card:{
+    backgroundColor:"#fff",
+    borderRadius:18,
+    padding:20,
+    elevation:6
   },
-  brand: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-    marginTop: 10,
+
+  title:{
+    fontSize:22,
+    fontWeight:"700",
+    color:"#0A1F44",
+    marginBottom:20,
+    textAlign:"center"
   },
-  subtitle: {
-    fontSize: 14,
-    color: "#cfd8dc",
-    marginTop: 4,
+
+  inputBox:{
+    flexDirection:"row",
+    alignItems:"center",
+    borderWidth:1,
+    borderColor:"#e0e0e0",
+    borderRadius:12,
+    paddingHorizontal:12,
+    marginBottom:15,
+    backgroundColor:"#fafafa",
+    height:50
   },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
-    padding: 20,
-    elevation: 6,
+
+  input:{
+    flex:1,
+    marginLeft:10,
+    fontSize:16,
+    color:"#263238"
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#0A1F44",
-    marginBottom: 20,
-    textAlign: "center",
+
+  button:{
+    backgroundColor:"#0A1F44",
+    height:52,
+    borderRadius:14,
+    justifyContent:"center",
+    alignItems:"center",
+    marginTop:10
   },
-  inputBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginBottom: 15,
-    backgroundColor: "#fafafa",
-    height: 50,
+
+  buttonText:{
+    color:"#fff",
+    fontSize:16,
+    fontWeight:"600"
   },
-  input: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: "#263238",
+
+  backRow:{
+    flexDirection:"row",
+    alignItems:"center",
+    marginBottom:12
   },
-  button: {
-    backgroundColor: "#0A1F44",
-    height: 52,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  resend: {
-    marginTop: 12,
-    textAlign: "center",
-    color: "#0A1F44",
-    fontWeight: "600",
-  },
-  info: {
-    marginTop: 18,
-    textAlign: "center",
-    fontSize: 13,
-    color: "#757575",
-  },
-});
+
+  backText:{
+    marginLeft:6,
+    color:"#0A1F44",
+    fontWeight:"600"
+  }
+})
