@@ -17,9 +17,10 @@ try{
 
 setLoading(true)
 
-const data = await getJobs()
+const data = await getJobs(page)
 
-setJobs(data || [])
+setJobs(data.jobs || [])
+setTotalPages(data.totalPages || 1)
 
 }catch(err){
 
