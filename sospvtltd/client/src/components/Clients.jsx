@@ -28,28 +28,28 @@ function Clients(){
 
 return(
 
-<section className="py-10 bg-gray-100">
+<section className="py-8 md:py-6 bg-gray-100">
 
-<div className="max-w-7xl mx-auto px-6">
+<div className="max-w-7xl mx-auto px-8 sm:px-6">
 
-<h2 className="text-3xl font-bold text-center mb-10">
+<h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 md:mb-4">
 Our Clients
 </h2>
 
 <Swiper
 modules={[Autoplay]}
-loop={true}
+loop
 autoplay={{
 delay:2000,
 disableOnInteraction:false
 }}
-spaceBetween={30}
+spaceBetween={12}
 breakpoints={{
-320:{slidesPerView:2},
-640:{slidesPerView:3},
-768:{slidesPerView:4},
-1024:{slidesPerView:5},
-1280:{slidesPerView:6}
+320:{slidesPerView:2,spaceBetween:12},
+640:{slidesPerView:3,spaceBetween:16},
+768:{slidesPerView:4,spaceBetween:20},
+1024:{slidesPerView:5,spaceBetween:24},
+1280:{slidesPerView:6,spaceBetween:30}
 }}
 >
 
@@ -57,12 +57,13 @@ breakpoints={{
 
 <SwiperSlide key={index}>
 
-<div className="bg-white rounded-lg shadow-sm hover:shadow-md transition p-6 flex items-center justify-center h-[100px]">
+<div className="bg-white rounded-lg shadow-sm hover:shadow-md transition p-3 sm:p-4 md:p-6 flex items-center justify-center h-[70px] sm:h-[85px] md:h-[100px]">
 
 <img
 src={logo}
 alt="client"
-className="max-h-14 object-contain transition"/>
+className="max-h-10 sm:max-h-12 md:max-h-14 object-contain transition"
+/>
 
 </div>
 

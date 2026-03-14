@@ -10,15 +10,15 @@ FaLinkedinIn,
 FaArrowUp
 } from "react-icons/fa"
 
-import { Link } from "react-router-dom"
+import {Link} from "react-router-dom"
 
 function Footer(){
 
 return(
 
-<footer className="bg-[#2f3f48] text-gray-300 pt-10 pb-4 text-sm relative">
+<footer className="bg-[#2f3f48] text-gray-300 pt-8 md:pt-10 pb-4 text-sm relative">
 
-<div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-10">
+<div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
 
 {/* COMPANY */}
 
@@ -103,14 +103,14 @@ Contact
 <ul className="space-y-3 text-sm">
 
 <li className="flex gap-2">
-<FaMapMarkerAlt className="mt-1 text-xs"/>
+<FaMapMarkerAlt className="mt-1 text-xs shrink-0"/>
 <span>
 Registered Office: H.No. - 5A, 3RD FLOOR, VIPIN GARDERN EXTN., GALI No.5, UTTAM NAGAR, West Delhi, Delhi (110059)
 </span>
 </li>
 
 <li className="flex gap-2">
-<FaMapMarkerAlt className="mt-1 text-xs"/>
+<FaMapMarkerAlt className="mt-1 text-xs shrink-0"/>
 <span>
 Corporate Office: NX-ONE, Sector-Techzone IV, Gr.Noida West, Gautam Budh Nagar, U.P. (201306)
 </span>
@@ -156,9 +156,9 @@ Corporate Office: NX-ONE, Sector-Techzone IV, Gr.Noida West, Gautam Budh Nagar, 
 
 {/* Divider */}
 
-<div className="border-t border-gray-600 mt-6 pt-3 max-w-7xl mx-auto px-6 flex justify-between items-center text-xs">
+<div className="border-t border-gray-600 mt-6 pt-3 max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center text-xs gap-2">
 
-<p>
+<p className="text-center sm:text-left">
 © <span className="text-white">Salvation Outsourcing Solution Pvt. Ltd.</span>, All Right Reserved.
 </p>
 
@@ -169,9 +169,9 @@ Corporate Office: NX-ONE, Sector-Techzone IV, Gr.Noida West, Gautam Budh Nagar, 
 
 <button
 onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}
-className="fixed bottom-6 right-6 bg-[#1d398d] text-white p-3 rounded shadow hover:bg-[#1d398d]"
+className="fixed bottom-5 right-5 bg-[#1d398d] text-white p-2.5 md:p-3 rounded shadow hover:bg-[#142a66]"
 >
-<FaArrowUp size={14}/>
+<FaArrowUp size={12}/>
 </button>
 
 </footer>

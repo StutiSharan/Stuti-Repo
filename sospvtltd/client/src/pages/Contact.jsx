@@ -11,7 +11,7 @@ email:"",
 subject:"",
 message:""
 })
-
+const [loading,setLoading] = useState(false)
 const handleChange=(e)=>{
 
 setForm({
@@ -21,11 +21,15 @@ setForm({
 
 }
 
-const handleSubmit=async(e)=>{
+const handleSubmit = async(e)=>{
 
 e.preventDefault()
 
+if(loading) return
+
 try{
+
+setLoading(true)
 
 const res = await sendContact(form)
 
@@ -41,6 +45,10 @@ message:""
 }catch(err){
 
 toast.error(err.message || "Failed to send message")
+
+}finally{
+
+setLoading(false)
 
 }
 
@@ -148,9 +156,12 @@ className="w-full border border-gray-200 p-3 rounded focus:outline-none focus:ri
 
 <button
 type="submit"
-className="w-full bg-[#1d398d] text-white py-3 rounded hover:bg-blue-700 transition"
+disabled={loading}
+className={`w-full py-3 rounded text-white transition
+${loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#1d398d] hover:bg-blue-700"}
+`}
 >
-Send Message
+{loading ? "Sending..." : "Send Message"}
 </button>
 
 </form>

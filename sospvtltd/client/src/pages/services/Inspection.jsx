@@ -8,7 +8,6 @@ FaHandsHelping
 } from "react-icons/fa"
 
 import hero from "../../assets/carousel-2.jpg"
-import about1 from "../../assets/about-1.jpg"
 import thirdParty from "../../assets/thiredParty.png"
 
 function Inspection(){
@@ -20,19 +19,17 @@ return(
 {/* HERO */}
 
 <div
-className="relative h-[300px] bg-cover bg-center"
+className="relative h-[180px] sm:h-[220px] md:h-[300px] bg-cover bg-center"
 style={{backgroundImage:`url(${hero})`}}
 >
 
 <div className="absolute inset-0 bg-black/60 flex items-center">
 
-<div className="max-w-6xl mx-auto px-6 text-white">
+<div className="max-w-6xl mx-auto px-4 sm:px-6 text-white w-full">
 
-<h1 className="text-5xl font-bold mb-3">
+<h1 className="text-2xl sm:text-3xl md:text-5xl font-bold">
 Third Party Inspection
 </h1>
-
-
 
 </div>
 
@@ -43,16 +40,16 @@ Third Party Inspection
 
 {/* ABOUT SECTION */}
 
-<div className="max-w-6xl mx-auto py-20 px-6 flex gap-12 items-start">
+<div className="max-w-6xl mx-auto py-8 md:py-16 px-4 sm:px-6 flex flex-col md:flex-row gap-6 md:gap-12 items-center md:items-start">
 
 {/* LEFT IMAGE */}
 
-<div className="w-[380px] flex-shrink-0">
+<div className="w-full md:w-[380px] flex-shrink-0">
 
 <img
 src={thirdParty}
 alt="Inspection"
-className="rounded-lg shadow-xl w-full h-[300px] object-cover"
+className="rounded-lg shadow-xl w-full h-[220px] sm:h-[260px] md:h-[300px] object-cover"
 />
 
 </div>
@@ -62,19 +59,21 @@ className="rounded-lg shadow-xl w-full h-[300px] object-cover"
 
 <div className="flex-1">
 
-<h2 className="text-4xl font-bold mb-6 text-gray-800">
+<h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-gray-800">
 Third Party Inspection
 </h2>
 
-<p className="text-gray-600 leading-relaxed">
+<p className="text-gray-600 text-sm sm:text-base leading-relaxed">
 
 Third-party inspection services refer to the independent evaluation of goods,
 products, or services by an external organization, typically an unbiased
 third party.
+
 <br/><br/>
 
 These services are vital to ensure compliance with industry standards,
 quality control, and safety regulations.
+
 <br/><br/>
 
 Whether it’s for manufacturing, construction, or product shipments,
@@ -90,15 +89,15 @@ products meet specified requirements.
 
 {/* SERVICE TYPES */}
 
-<div className="py-16">
+<div className="py-8 md:py-16">
 
-<div className="max-w-6xl mx-auto px-6">
+<div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-<h2 className="text-center text-3xl font-semibold mb-12 text-gray-800">
+<h2 className="text-center text-2xl sm:text-3xl font-semibold mb-8 md:mb-12 text-gray-800">
 Type of Third Party Inspection
 </h2>
 
-<div className="grid md:grid-cols-3 gap-8">
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-8">
 
 <ServiceCard
 icon={<FaMailBulk/>}
@@ -156,13 +155,13 @@ function ServiceCard({icon,title,text}){
 
 return(
 
-<div className="bg-white p-6 rounded shadow hover:shadow-lg transition duration-300 hover:-translate-y-1">
+<div className="bg-white p-5 md:p-6 rounded shadow hover:shadow-lg transition duration-300 hover:-translate-y-1">
 
-<div className="text-[#1d398d] text-3xl mb-4">
+<div className="text-[#1d398d] text-2xl md:text-3xl mb-3 md:mb-4">
 {icon}
 </div>
 
-<h3 className="font-semibold text-lg mb-2">
+<h3 className="font-semibold text-base md:text-lg mb-2">
 {title}
 </h3>
 

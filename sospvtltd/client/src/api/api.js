@@ -2,8 +2,6 @@ const API = import.meta.env.VITE_API_URL
 
 export const sendContact = async(data)=>{
 
-try{
-
 const res = await fetch(`${API}/contact`,{
 method:"POST",
 headers:{
@@ -20,14 +18,10 @@ throw new Error(result.message || "Failed")
 
 return result
 
-}catch(err){
-
-throw err
-
 }
 
-}
 
+// GET JOBS
 
 export const getJobs = async()=>{
 
@@ -35,14 +29,80 @@ const res = await fetch(`${API}/jobs`)
 return res.json()
 
 }
+
+
+// GET JOB BY ID
+
 export const getJobById = async(id)=>{
 
 const res = await fetch(`${API}/jobs/${id}`)
+return res.json()
+
+}
+
+
+// CREATE JOB
+
+export const createJob = async(data)=>{
+
+const res = await fetch(`${API}/jobs/create`,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(data)
+})
 
 return res.json()
 
 }
 
+
+// UPDATE JOB
+
+export const updateJob = async(id,data)=>{
+
+const res = await fetch(`${API}/jobs/update/${id}`,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(data)
+})
+
+return res.json()
+
+}
+
+
+// DELETE JOB
+
+export const deleteJob = async(id)=>{
+
+const res = await fetch(`${API}/jobs/delete/${id}`,{
+method:"DELETE"
+})
+
+return res.json()
+
+}
+
+
+// APPLY JOB
+
+export const applyJob = async(formData)=>{
+
+const res = await fetch(`${API}/jobs/apply`,{
+method:"POST",
+body:formData
+})
+
+return res.json()
+
+}
+
+
+// ADMIN LOGIN
 
 export const adminLogin = async(data)=>{
 
@@ -52,31 +112,6 @@ headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify(data)
-})
-
-return res.json()
-
-}
-
-
-export const createJob = async(data)=>{
-
-const res = await fetch(`${API}/admin/job`,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(data)
-})
-
-return res.json()
-
-}
-export const applyJob = async(formData)=>{
-
-const res = await fetch(`${API}/application/apply`,{
-method:"POST",
-body:formData
 })
 
 return res.json()

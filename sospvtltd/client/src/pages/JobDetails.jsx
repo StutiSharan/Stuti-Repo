@@ -1,30 +1,31 @@
 import {useParams} from "react-router-dom"
 import {useEffect,useState} from "react"
 import {motion} from "framer-motion"
-import {FaMapMarkerAlt,FaClock,FaRupeeSign} from "react-icons/fa"
+import {FaMapMarkerAlt,FaClock,FaRupeeSign,FaCalendarAlt} from "react-icons/fa"
 import {getJobById,applyJob} from "../api/api"
 import toast from "react-hot-toast"
 
 function JobDetails(){
 
-const {id} = useParams()
+const {id}=useParams()
 
-const [job,setJob] = useState(null)
+const[job,setJob]=useState(null)
+const[loading,setLoading]=useState(false)
 
-const [loading,setLoading] = useState(false)
-
-const [form,setForm] = useState({
+const[form,setForm]=useState({
 name:"",
 phone:"",
 email:"",
 facebook:"",
+education:"",
+industry:"",
 message:"",
 resume:null
 })
 
-const fetchJob = async()=>{
+const fetchJob=async()=>{
 try{
-const data = await getJobById(id)
+const data=await getJobById(id)
 setJob(data)
 }catch(err){
 console.error("Failed to fetch job")
@@ -35,7 +36,6 @@ useEffect(()=>{
 fetchJob()
 },[id])
 
-// handle input change
 const handleChange=(e)=>{
 
 if(e.target.name==="resume"){
@@ -43,9 +43,8 @@ setForm({...form,resume:e.target.files[0]})
 return
 }
 
-// prevent letters in phone
 if(e.target.name==="phone"){
-const value = e.target.value.replace(/\D/g,"")
+const value=e.target.value.replace(/\D/g,"")
 setForm({...form,phone:value})
 return
 }
@@ -53,9 +52,7 @@ return
 setForm({...form,[e.target.name]:e.target.value})
 }
 
-
-// validation function
-const validateForm = ()=>{
+const validateForm=()=>{
 
 if(!form.name.trim()){
 toast.error("Name is required")
@@ -67,8 +64,18 @@ toast.error("Phone number required")
 return false
 }
 
-if(form.phone.length < 10){
+if(form.phone.length<10){
 toast.error("Enter valid phone number")
+return false
+}
+
+if(!form.education){
+toast.error("Please select education")
+return false
+}
+
+if(!form.industry){
+toast.error("Please select industry")
 return false
 }
 
@@ -89,47 +96,32 @@ toast.error("Please upload resume")
 return false
 }
 
-const allowed=[
-"application/pdf",
-"application/msword",
-"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-"image/jpeg",
-"image/png",
-"image/jpg"
-]
-
-if(!allowed.includes(form.resume.type)){
-toast.error("Upload PDF, DOC or Image file")
-return false
-}
-
 return true
 }
 
-
-// submit
 const handleSubmit=async(e)=>{
-console.log("Submitting form")
 
 e.preventDefault()
-
+if(loading) return
 if(!validateForm()) return
 
 try{
 
 setLoading(true)
 
-const formData = new FormData()
+const formData=new FormData()
 
 formData.append("jobId",id)
 formData.append("name",form.name)
 formData.append("email",form.email)
 formData.append("phone",form.phone)
 formData.append("facebook",form.facebook)
+formData.append("education",form.education)
+formData.append("industry",form.industry)
 formData.append("message",form.message)
 formData.append("resume",form.resume)
 
-const res = await applyJob(formData)
+const res=await applyJob(formData)
 
 if(res.success){
 
@@ -140,6 +132,8 @@ name:"",
 phone:"",
 email:"",
 facebook:"",
+education:"",
+industry:"",
 message:"",
 resume:null
 })
@@ -159,34 +153,41 @@ setLoading(false)
 }
 
 if(!job){
-
 return(
-<div className="text-center py-20 text-gray-500">
+<div className="py-20 text-center text-gray-500">
 Loading job details...
 </div>
 )
-
 }
 
 return(
 
-<div className="bg-gray-50 min-h-screen">
+<div className="bg-gray-50">
 
-<div className="bg-blue-900 text-white py-20 text-center">
-<h1 className="text-5xl font-bold">
+{/* HEADER */}
+
+<div className="bg-blue-900 text-white py-10 md:py-16 text-center">
+
+<h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
 Job Detail
 </h1>
+
 </div>
 
-<div className="max-w-6xl mx-auto py-16 px-6 grid md:grid-cols-3 gap-10">
+
+{/* CONTENT */}
+
+<div className="max-w-6xl mx-auto py-8 md:py-16 px-4 sm:px-6 grid lg:grid-cols-3 gap-6 md:gap-10">
+
+{/* LEFT CONTENT */}
 
 <motion.div
 initial={{opacity:0,x:-50}}
 animate={{opacity:1,x:0}}
-className="md:col-span-2 bg-white p-8 rounded-xl shadow"
+className="lg:col-span-2 bg-white p-5 sm:p-8 rounded-xl shadow"
 >
 
-<h2 className="text-2xl font-bold mb-6">
+<h2 className="text-xl sm:text-2xl font-bold mb-4">
 {job.title}
 </h2>
 
@@ -206,13 +207,18 @@ Other Information
 {job.otherInfo}
 </p>
 
-<div className="mt-12">
+
+{/* FORM */}
+
+<div className="mt-10">
 
 <h3 className="text-xl font-bold mb-6 text-gray-800">
 Apply For This Job
 </h3>
 
-<form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
+<form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+
+{/* NAME */}
 
 <div>
 <label className="text-xs font-semibold text-gray-600 uppercase">
@@ -227,6 +233,8 @@ onChange={handleChange}
 className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
 />
 </div>
+
+{/* PHONE */}
 
 <div>
 <label className="text-xs font-semibold text-gray-600 uppercase">
@@ -243,6 +251,74 @@ className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
 />
 </div>
 
+
+{/* EDUCATION */}
+
+<div>
+<label className="text-xs font-semibold text-gray-600 uppercase">
+Education
+</label>
+
+<select
+name="education"
+value={form.education}
+onChange={handleChange}
+required
+className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
+>
+<option value="">Select Education</option>
+<option>Below High School</option>
+<option>High School</option>
+<option>Intermediate</option>
+<option>Diploma</option>
+<option>ITI</option>
+<option>Graduate</option>
+<option>Post Graduate</option>
+<option>PhD</option>
+</select>
+</div>
+
+
+{/* INDUSTRY */}
+
+<div>
+<label className="text-xs font-semibold text-gray-600 uppercase">
+Industry
+</label>
+
+<select
+name="industry"
+value={form.industry}
+onChange={handleChange}
+required
+className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
+>
+<option value="">Select Industry</option>
+<option>Fresher</option>
+<option>Manufacturing</option>
+<option>Automobile</option>
+<option>Construction</option>
+<option>IT & Software</option>
+<option>Healthcare</option>
+<option>Finance & Banking</option>
+<option>Education</option>
+<option>Retail & E-commerce</option>
+<option>Telecommunication</option>
+<option>Pharmaceutical</option>
+<option>Real Estate</option>
+<option>Oil & Gas</option>
+<option>Textile & Apparel</option>
+<option>Food & Beverage</option>
+<option>Logistics & Transportation</option>
+<option>Hospitality & Tourism</option>
+<option>Agriculture</option>
+<option>Media & Entertainment</option>
+</select>
+</div>
+
+
+{/* EMAIL */}
+
 <div>
 <label className="text-xs font-semibold text-gray-600 uppercase">
 Email
@@ -257,6 +333,9 @@ className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
 />
 </div>
 
+
+{/* FACEBOOK */}
+
 <div>
 <label className="text-xs font-semibold text-gray-600 uppercase">
 Facebook (Optional)
@@ -270,7 +349,10 @@ className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
 />
 </div>
 
-<div className="col-span-2">
+
+{/* RESUME */}
+
+<div className="sm:col-span-2">
 <label className="text-xs font-semibold text-gray-600 uppercase">
 Upload Resume
 </label>
@@ -284,7 +366,10 @@ className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
 />
 </div>
 
-<div className="col-span-2">
+
+{/* MESSAGE */}
+
+<div className="sm:col-span-2">
 <label className="text-xs font-semibold text-gray-600 uppercase">
 Additional Information (Optional)
 </label>
@@ -297,12 +382,17 @@ className="w-full mt-1 border border-gray-300 px-3 py-2 text-sm rounded"
 />
 </div>
 
+
 <button
 disabled={loading}
 type="submit"
-className="col-span-2 bg-blue-900 hover:bg-blue-800 text-white py-2.5 rounded-lg text-sm font-semibold transition"
+className={`sm:col-span-2 py-2.5 rounded-lg text-sm font-semibold transition text-white 
+${loading 
+? "bg-gray-400 cursor-not-allowed" 
+: "bg-blue-900 hover:bg-blue-800"}
+`}
 >
-{loading ? "Submitting..." : "Apply Now"}
+{loading ? "Submitting... Please Wait !" : "Apply Now"}
 </button>
 
 </form>
@@ -311,17 +401,25 @@ className="col-span-2 bg-blue-900 hover:bg-blue-800 text-white py-2.5 rounded-lg
 
 </motion.div>
 
+
+{/* JOB SUMMARY */}
+
 <motion.div
 initial={{opacity:0,x:50}}
 animate={{opacity:1,x:0}}
-className="bg-white p-8 rounded-xl shadow h-fit"
+className="bg-white p-5 sm:p-8 rounded-xl shadow h-fit"
 >
 
 <h3 className="text-xl font-bold mb-6">
 Job Summary
 </h3>
 
-<ul className="space-y-3 text-gray-600">
+<ul className="space-y-3 text-gray-600 text-sm sm:text-base">
+
+<li className="flex items-center gap-2">
+<FaCalendarAlt/>
+Published On: {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "N/A"}
+</li>
 
 <li>Industry: {job.industry}</li>
 

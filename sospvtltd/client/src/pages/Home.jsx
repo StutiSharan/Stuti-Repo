@@ -9,7 +9,9 @@ function Home(){
 
 return(
 
-<div>
+<div className="w-full overflow-x-hidden">
+
+<div className="space-y-12 sm:space-y-16 md:space-y-20 lg:space-y-24">
 
 <Hero/>
 
@@ -22,6 +24,8 @@ return(
 <Jobs/>
 
 <Clients/>
+
+</div>
 
 </div>
 
