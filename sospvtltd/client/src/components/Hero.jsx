@@ -8,13 +8,17 @@ import {Link} from "react-router-dom"
 import "swiper/css"
 import "swiper/css/pagination"
 
-import slide1 from "../assets/oneHero.png"
-import slide2 from "../assets/twoHero.png"
-import video from "../assets/Corporate_Video_For_Manpower_Services.mp4"
+import slide1 from "../assets/manpower-4.jpg"
+import slide2 from "../assets/manpower-2.jpg"
+import slide3 from "../assets/manpower-5.jpg"
+import slide4 from "../assets/manpower-1.jpg"
+import slide5 from "../assets/manpower-3.jpg"
 
 function Hero(){
 
 const swiperRef=useRef(null)
+
+const slides=[slide1,slide2,slide3,slide4,slide5]
 
 return(
 
@@ -60,61 +64,66 @@ ensuring efficient recruitment and labor management.
 modules={[Autoplay,Pagination]}
 onSwiper={(swiper)=>swiperRef.current=swiper}
 pagination={{clickable:true}}
-autoplay={{delay:7000}}
+
+autoplay={{
+delay:2000,
+disableOnInteraction:false
+}}
+
+speed={800}
+
 loop
-className="rounded-xl shadow-lg bg-white p-2 mt-10"
+className="rounded-xl shadow-lg mt-10 overflow-hidden"
 >
 
-<SwiperSlide>
-<div className="flex items-center justify-center h-[180px] sm:h-[240px] md:h-[320px]">
-<video autoPlay muted loop playsInline className="max-h-full max-w-full object-contain">
-<source src={video} type="video/mp4"/>
-</video>
+{slides.map((img,i)=>(
+<SwiperSlide key={i}>
+<div className="h-[200px] sm:h-[240px] md:h-[300px] w-full">
+<img
+src={img}
+className="w-full h-full object-cover"
+/>
 </div>
 </SwiperSlide>
-
-<SwiperSlide>
-<div className="flex items-center justify-center h-[180px] sm:h-[240px] md:h-[320px]">
-<img src={slide1} className="max-h-full object-contain"/>
-</div>
-</SwiperSlide>
-
-<SwiperSlide>
-<div className="flex items-center justify-center h-[180px] sm:h-[240px] md:h-[320px]">
-<img src={slide2} className="max-h-full object-contain"/>
-</div>
-</SwiperSlide>
+))}
 
 </Swiper>
 
-<button
-onClick={()=>swiperRef.current.slidePrev()}
-className="absolute left-1 top-1/2 -translate-y-1/2 bg-white shadow p-2 rounded-full"
->
-<FaChevronLeft size={12}/>
-</button>
+
+{/* LEFT BUTTON */}
 
 <button
-onClick={()=>swiperRef.current.slideNext()}
-className="absolute right-1 top-1/2 -translate-y-1/2 bg-white shadow p-2 rounded-full"
+onClick={()=>swiperRef.current?.slidePrev()}
+className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md p-2 sm:p-3 rounded-full hover:bg-white"
 >
-<FaChevronRight size={12}/>
+<FaChevronLeft className="text-[11px] sm:text-[14px]"/>
+</button>
+
+
+{/* RIGHT BUTTON */}
+
+<button
+onClick={()=>swiperRef.current?.slideNext()}
+className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md p-2 sm:p-3 rounded-full hover:bg-white"
+>
+<FaChevronRight className="text-[11px] sm:text-[14px]"/>
 </button>
 
 </div>
+
 
 {/* BUTTONS */}
 
 <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start -mt-3 sm:-mt-4">
 
 <Link to="/services/manpower" className="w-full sm:w-auto">
-<button className="bg-[#1d398d] text-white px-6 py-3 rounded-lg w-full">
+<button className="bg-[#1d398d] text-white px-6 py-3 rounded-lg w-full hover:bg-[#162d6b]">
 Our Services
 </button>
 </Link>
 
 <Link to="/contact" className="w-full sm:w-auto">
-<button className="border border-[#1d398d] text-[#1d398d] px-6 py-3 rounded-lg w-full">
+<button className="border border-[#1d398d] text-[#1d398d] px-6 py-3 rounded-lg w-full hover:bg-[#1d398d] hover:text-white">
 Contact Us
 </button>
 </Link>

@@ -8,7 +8,7 @@ FaHandsHelping
 } from "react-icons/fa"
 
 import hero from "../../assets/carousel-1.jpg"
-import manpower from "../../assets/manpaower.png"
+import manpower from "../../assets/manpower-2.jpg"
 
 function ManPower(){
 
